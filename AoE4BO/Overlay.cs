@@ -82,6 +82,7 @@ namespace AoE4BO
 
                     Thread.Sleep(500);
                 }
+                Thread.Sleep(15000);
                 var process = System.Diagnostics.Process.GetProcessesByName("RelicCardinal")[0];
                 _processSharp = new ProcessSharp(process, MemoryType.Remote);
 
