@@ -59,6 +59,11 @@ namespace AoE4BO
                     lbState.Text = "Text recognition error!";
                     lbState.ForeColor = Color.Red;
                 }
+                else
+                {
+                    lbState.Text = "Waiting for match";
+                    lbState.ForeColor = Color.Green;
+                }
             }
             else if (Global.BoState == BoState.Finish)
             {
