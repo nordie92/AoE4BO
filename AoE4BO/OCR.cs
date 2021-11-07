@@ -108,10 +108,6 @@ namespace AoE4BO
 
         private void ErrorHandling()
         {
-            Console.WriteLine("#################");
-            Console.WriteLine(_lastOcrTime);
-            Console.WriteLine(Global.OCRDowntime);
-            Console.WriteLine((DateTime.Now - _lastOcrTime));
             if (_lastOcrTime != DateTime.MinValue)
                 Global.OCRDowntime = (float)(DateTime.Now - _lastOcrTime).TotalSeconds;
 
