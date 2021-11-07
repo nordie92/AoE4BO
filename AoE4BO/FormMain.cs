@@ -67,61 +67,44 @@ namespace AoE4BO
             }
         }
 
-        private void btnOpenBO_Click(object sender, EventArgs e)
+        private void LoadBuildOrder(string buildOrderString)
         {
             try
             {
-                OpenFileDialog ofd = new OpenFileDialog();
-                ofd.Filter = "AoE4BO Files|*.aoe4bo";
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    string buildOrderString = File.ReadAllText(ofd.FileName, Encoding.UTF8);
+                _buildOrder = new BuildOrder(buildOrderString);
+                _buildOrder.Start();
 
-                    _buildOrder = new BuildOrder(buildOrderString);
-                    _buildOrder.Start();
-                    rtbBuildOrder.Text = buildOrderString;
+                _overlay.StartBuildOrder(_buildOrder);
+                _ocr.Start();
 
-                    _overlay.StartBuildOrder(_buildOrder);
-                    Text = "AoE4BO - " + ofd.SafeFileName;
-                }
+                rtbBuildOrder.Text = buildOrderString;
             }
             catch (Exception ex)
             {
                 if (ex.Message == "parsing error")
-                {
                     MessageBox.Show("Error while parsing build order file", "Parse failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
                 else
-                {
                     throw ex;
-                }
+            }
+        }
+
+        private void btnOpenBO_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "AoE4BO Files|*.aoe4bo";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string buildOrderString = File.ReadAllText(ofd.FileName, Encoding.UTF8);
+                LoadBuildOrder(buildOrderString);
+                Text = "AoE4BO - " + ofd.SafeFileName;
             }
         }
 
         private void btnBoFromClipboard_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string buildOrderString = Clipboard.GetText();
-
-                _buildOrder = new BuildOrder(buildOrderString);
-                _buildOrder.Start();
-                rtbBuildOrder.Text = buildOrderString;
-
-                _overlay.StartBuildOrder(_buildOrder);
-                Text = "AoE4BO - unknown.aoe4bo";
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message == "parsing error")
-                {
-                    MessageBox.Show("Error while parsing build order file", "Parse failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    throw ex;
-                }
-            }
+            string buildOrderString = Clipboard.GetText();
+            LoadBuildOrder(buildOrderString);
+            Text = "AoE4BO - unknown.aoe4bo";
         }
 
         private void btnSettings_Click(object sender, EventArgs e)

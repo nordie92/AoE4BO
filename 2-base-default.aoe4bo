@@ -1,19 +1,17 @@
-7s: Baue durchgehend Arbeiter
-7s: Alle Arbeiter auf Schafe
-7s: HQ Waypoint auf Gold
-7s: Mit Scout Schafe holen
-8s: Mit neuem Arbeiter Haus bauen,
-8s: Bergwerk bauen,
-8s: dann auf Gold
-9s: HQ Waypoint auf Holz
-11s: Nächsten 2 Arbeiter auf Schaf
-13s: Nächste Arbeiter auf Stein
-200g: Arbeiter von Gold auf Stein
-400f: Ratshalle bauen mit 2 Foodarbeitern,
-400f: danach zum Stein
-400f: 2 Arbeiter von Schaf auf Holz
-400f: Nächste Arbeiter auf Holz
-18s: Mit neuem Woodarbeiter Haus bauen
-300st: Arbeiter von Stein
-300st: zum HQ bauplatz laufen
-400w: Baue 2tes HQ
+#https://www.youtube.com/watch?v=9--iERiAuxI
+7s: Build worker non stop
+7s: All 6 worker on sheep
+7s: HQ waypoint to gold
+7s: Find sheeps with scout
+8s: Build house with new worker,
+8s: after that gold
+9s: HQ waypoint to wood
+11s: Next 2 worker on sheep
+13s: Next worker stone
+200g: Goldworker on stone
+400f: build council hallwith 2 food worker,
+400f: then stone
+400f: 2 worker from food to stone
+400f: HQ waypoint to wood
+18s: Build house
+300st,400w: Build 2tes HQ on deer

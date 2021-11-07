@@ -17,96 +17,110 @@ namespace AoE4BO
         private TesseractEngine _ocr;
         private PrintScreen _printScreen = new PrintScreen();
         private Timer _timerScreenshot;
-        private DateTime _lastOcrTime;
+        private DateTime _lastOcrTime = DateTime.MinValue;
 
         public OCR()
         {
             _ocr = new TesseractEngine("./tessdata", "eng", EngineMode.Default);
             _ocr.SetDebugVariable("debug_file", "tesseract.log");
             _ocr.SetVariable("tessedit_char_whitelist", "0123456789/");
+        }
 
+        public void Start()
+        {
+            Global.OCRState = OCRState.WaitForMatch;
             _timerScreenshot = new Timer(new TimerCallback(Tick), null, 500, 500);
+        }
+
+        public void Stop()
+        {
+            if (_timerScreenshot != null)
+            {
+                _timerScreenshot.Dispose();
+                _timerScreenshot = null;
+            }
         }
 
         private void Tick(object state)
         {
-            string s = "";
-            try
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            Bitmap screenshot = TakeScreenshot();
+
+            string s = Recognize(screenshot, "Supply",
+                new Rectangle(Global.Settings.SupplyX, Global.Settings.SupplyY, Global.Settings.SupplyWidth, Global.Settings.SupplyHeight),
+                Global.Settings.SupplyContrast, Global.Settings.SupplyScale, Global.Settings.SupplyGrayscale, true);
+            string[] strSupply = s.Split('/');
+
+            if (strSupply.Length != 2)
             {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
+                ErrorHandling();
+                return;
+            }
 
-                Bitmap screenshot = TakeScreenshot();
+            string strFood = Recognize(screenshot, "Food",
+                new Rectangle(Global.Settings.FoodX, Global.Settings.FoodY, Global.Settings.FoodWidth, Global.Settings.FoodHeight),
+                Global.Settings.FoodContrast, Global.Settings.FoodScale, Global.Settings.FoodGrayscale, true);
+            string strWood = Recognize(screenshot, "Wood",
+                new Rectangle(Global.Settings.WoodX, Global.Settings.WoodY, Global.Settings.WoodWidth, Global.Settings.WoodHeight),
+                Global.Settings.WoodContrast, Global.Settings.WoodScale, Global.Settings.WoodGrayscale, true);
+            string strGold = Recognize(screenshot, "Gold",
+                new Rectangle(Global.Settings.GoldX, Global.Settings.GoldY, Global.Settings.GoldWidth, Global.Settings.GoldHeight),
+                Global.Settings.GoldContrast, Global.Settings.GoldScale, Global.Settings.GoldGrayscale, true);
+            string strStone = Recognize(screenshot,  "Stone",
+                new Rectangle(Global.Settings.StoneX, Global.Settings.StoneY, Global.Settings.StoneWidth, Global.Settings.StoneHeight),
+                Global.Settings.StoneContrast, Global.Settings.StoneScale, Global.Settings.StoneGrayscale, true);
 
-                s = Recognize(
-                    screenshot,
-                    "Supply",
-                    new Rectangle(Global.Settings.SupplyX, Global.Settings.SupplyY, Global.Settings.SupplyWidth, Global.Settings.SupplyHeight),
-                    Global.Settings.SupplyContrast,
-                    Global.Settings.SupplyScale,
-                    Global.Settings.SupplyGrayscale,
-                    true);
-                string[] strSupply = s.Split('/');
+            screenshot.Dispose();
 
-                string strFood = Recognize(
-                    screenshot,
-                    "Food",
-                    new Rectangle(Global.Settings.FoodX, Global.Settings.FoodY, Global.Settings.FoodWidth, Global.Settings.FoodHeight),
-                    Global.Settings.FoodContrast,
-                    Global.Settings.FoodScale,
-                    Global.Settings.FoodGrayscale,
-                    true);
-                string strWood = Recognize(
-                    screenshot,
-                    "Wood",
-                    new Rectangle(Global.Settings.WoodX, Global.Settings.WoodY, Global.Settings.WoodWidth, Global.Settings.WoodHeight),
-                    Global.Settings.WoodContrast,
-                    Global.Settings.WoodScale,
-                    Global.Settings.WoodGrayscale,
-                    true);
-                string strGold = Recognize(
-                    screenshot,
-                    "Gold",
-                    new Rectangle(Global.Settings.GoldX, Global.Settings.GoldY, Global.Settings.GoldWidth, Global.Settings.GoldHeight),
-                    Global.Settings.GoldContrast,
-                    Global.Settings.GoldScale,
-                    Global.Settings.GoldGrayscale,
-                    true);
-                string strStone = Recognize(
-                    screenshot,
-                    "Stone",
-                    new Rectangle(Global.Settings.StoneX, Global.Settings.StoneY, Global.Settings.StoneWidth, Global.Settings.StoneHeight),
-                    Global.Settings.StoneContrast,
-                    Global.Settings.StoneScale,
-                    Global.Settings.StoneGrayscale,
-                    true);
+            bool b1, b2, b3, b4, b5, b6;
+            int i1, i2, i3, i4, i5, i6;
+            b1 = int.TryParse(strSupply[0], out i1);
+            b2 = int.TryParse(strSupply[1], out i2);
+            b3 = int.TryParse(strFood, out i3);
+            b4 = int.TryParse(strWood, out i4);
+            b5 = int.TryParse(strGold, out i5);
+            b6 = int.TryParse(strStone, out i6);
 
-                Global.GameData.Supply = int.Parse(strSupply[0]);
-                Global.GameData.SupplyCap = int.Parse(strSupply[1]);
-                Global.GameData.Food = int.Parse(strFood);
-                Global.GameData.Wood = int.Parse(strWood);
-                Global.GameData.Gold = int.Parse(strGold);
-                Global.GameData.Stone = int.Parse(strStone);
+            sw.Stop();
+            Global.OCRProcessTime = (int)sw.ElapsedMilliseconds;
 
-                sw.Stop();
-                Global.OCRProcessTime = (int)sw.ElapsedMilliseconds;
+            if (b1 && b2 && b3 && b4 && b5 && b6)
+            {
+                Global.GameData.Supply = i1;
+                Global.GameData.SupplyCap = i2;
+                Global.GameData.Food = i3;
+                Global.GameData.Wood = i4;
+                Global.GameData.Gold = i5;
+                Global.GameData.Stone = i6;
+
                 _lastOcrTime = DateTime.Now;
                 Global.OCRDowntime = 0f;
 
-                screenshot.Dispose();
+                Global.OCRState = OCRState.Success;
             }
-            catch (Exception)
+            else
             {
-                Global.OCRDowntime = (float)(DateTime.Now - _lastOcrTime).Milliseconds / 1000f;
+                ErrorHandling();
             }
-            finally
+        }
+
+        private void ErrorHandling()
+        {
+            Console.WriteLine("#################");
+            Console.WriteLine(_lastOcrTime);
+            Console.WriteLine(Global.OCRDowntime);
+            Console.WriteLine((DateTime.Now - _lastOcrTime));
+            if (_lastOcrTime != DateTime.MinValue)
+                Global.OCRDowntime = (float)(DateTime.Now - _lastOcrTime).TotalSeconds;
+
+            if (Global.OCRState != OCRState.WaitForMatch)
             {
                 if (Global.OCRDowntime > Global.Settings.OCRMaxDowntime)
                     Global.OCRState = OCRState.Error;
                 else if (Global.OCRDowntime > 0f)
                     Global.OCRState = OCRState.Warning;
-                else
-                    Global.OCRState = OCRState.Success;
             }
         }
 

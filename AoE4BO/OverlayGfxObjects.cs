@@ -191,7 +191,7 @@ namespace AoE4BO
 
         public override void Draw()
         {
-            if (Global.BoState != BoState.Running)
+            if (Global.BoState != BoState.Running || Global.OCRState == OCRState.WaitForMatch)
                 return;
 
             // draw container rectangle
@@ -244,6 +244,8 @@ namespace AoE4BO
             if (Global.BoState == BoState.Finish)
                 return;
             if (Y < Parent.Y)
+                return;
+            if (Global.OCRState == OCRState.WaitForMatch)
                 return;
 
             int color = BuildOrderStep.IsActive ? _colorBackActive : _colorBack;

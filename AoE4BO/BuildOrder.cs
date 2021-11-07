@@ -24,6 +24,13 @@ namespace AoE4BO
 
         public void Start()
         {
+            Global.GameData.Supply = 0;
+            Global.GameData.SupplyCap = 0;
+            Global.GameData.Food = 0;
+            Global.GameData.Wood = 0;
+            Global.GameData.Gold = 0;
+            Global.GameData.Stone = 0;
+
             Global.BoState = BoState.Running;
             _stopwatch = new Stopwatch();
             _timerUpdate = new Timer(new TimerCallback(Update), null, 100, 100);
@@ -114,7 +121,7 @@ namespace AoE4BO
                 string[] lines = buildOrderString.Split('\n');
                 foreach (string line in lines)
                 {
-                    if (line.Length == 0)
+                    if (line.Length == 0 || line[0] == '#')
                         continue;
 
                     BuildOrderStep bos = new BuildOrderStep();

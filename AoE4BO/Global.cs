@@ -48,6 +48,7 @@ namespace AoE4BO
 
     public enum OCRState
     {
+        WaitForMatch,
         Success,
         Warning,
         Error
