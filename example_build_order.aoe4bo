@@ -1,0 +1,12 @@
+REQUIREMENTS: INSTRUCTION
+6s:        Build worker
+400F,200G: Go epoche II
+
+BEDINGUNGEN:
+  S : Suppply
+  SC: SupplyCap
+  F : Food
+  W : Wood
+  G : Gold
+  St: Stone
+  T : Time in seconds
