@@ -2,7 +2,7 @@ REQUIREMENTS: INSTRUCTION
 6s:        Build worker
 400F,200G: Go epoche II
 
-BEDINGUNGEN:
+Different requirements:
   S : Suppply
   SC: SupplyCap
   F : Food
