@@ -8,7 +8,7 @@ Install:
 
 Usage:
 - Execute AoE4BO.exe
-- Open a build order file for "example 2-base-default.aoe4bo"
+- Open a build order file for example "2-base-default.aoe4bo"
 - start Age of Empire 4 match
 
 Create own build order:
