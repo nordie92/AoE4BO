@@ -18,8 +18,8 @@ This tool will make it easier for you to learn buildorders. The next steps of th
 Please share your build order! https://steamcommunity.com/groups/Aoe4BO
 
 ## Create your own build order
-Creating your own build order is easy. Create a text file and write down one line for one instruction.
-At first you have to define the requirements. For example "7s" (when reaches 7 supply).Or "7s,100f" (when reaches 7 supply and 100 food). Next close this requirement section by typing ":". Finally write down the instruction, "build house" for example.
+Create a text file and write down one line for every instruction.
+At first you have to define the requirements. For example "7s" (when reaches 7 supply). Or "7s,100f" (when reaches 7 supply and 100 food). Next close this requirement section by typing ":". Finally write down the instruction, "build house" for example.
 There are 7 possible requirements implemented: Supply(s), Supply cap(sc), food(f), wood(w), gold(g), stone(st) and time(t, in seconds). If you want to write more then one instruction just repeat the same requirements on the next line.
 
 ## Text recognition failed
