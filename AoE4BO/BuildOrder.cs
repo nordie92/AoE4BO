@@ -24,6 +24,7 @@ namespace AoE4BO
 
         public void Start()
         {
+            // reset game values so no build order step get skipped
             Global.GameData.Supply = 0;
             Global.GameData.SupplyCap = 0;
             Global.GameData.Food = 0;
@@ -65,36 +66,31 @@ namespace AoE4BO
                 Global.GameData.Food, Global.GameData.Wood,
                 Global.GameData.Gold, Global.GameData.Stone))
             {
+                // set the next build order step
                 CurrentBuildOrderStep = CurrentBuildOrderStep.NextBuildOrderStep;
 
+                // setting state varible of previous build order step
                 CurrentBuildOrderStep.PrevBuildOrderStep.IsActive = false;
                 CurrentBuildOrderStep.PrevBuildOrderStep.IsDone = true;
 
+                // setting state varible of current build order step
                 CurrentBuildOrderStep.IsActive = true;
                 CurrentBuildOrderStep.IsDone = false;
 
-                if (CurrentBuildOrderStep.NextBuildOrderStep != null)
-                {
-                    CurrentBuildOrderStep.NextBuildOrderStep.IsActive = false;
-                    CurrentBuildOrderStep.NextBuildOrderStep.IsDone = false;
-                }
-                else
-                {
+                // if next build order step is null we are finish
+                if (CurrentBuildOrderStep.NextBuildOrderStep == null)
                     Global.BoState = BoState.Finish;
-                }
 
                 if (Global.Settings.PlaySound)
                 {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"pfeifen.wav");
+                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"notification.wav");
                     player.Play();
                 }
             }
 
-            // add time
+            // adding delta time to next build order step to check time requirement
             if (CurrentBuildOrderStep.NextBuildOrderStep != null)
-            {
                 CurrentBuildOrderStep.NextBuildOrderStep.TimeActive += deltaTime;
-            }
         }
 
         private void ResetBuildOrderSteps()
@@ -119,12 +115,14 @@ namespace AoE4BO
                 BuildOrderStep lastBuildOrderStep = null;
 
                 string[] lines = buildOrderString.Split('\n');
-                foreach (string line in lines)
+                foreach (string lineRaw in lines)
                 {
+                    BuildOrderStep bos = new BuildOrderStep();
+                    string line = lineRaw.Trim();
+
+                    // if line is a comment or empty skip this loop
                     if (line.Length == 0 || line[0] == '#')
                         continue;
-
-                    BuildOrderStep bos = new BuildOrderStep();
 
                     int seperatorPos = line.IndexOf(':');
 
@@ -161,7 +159,8 @@ namespace AoE4BO
                     // parse instructions
                     string instruction = line.Substring(seperatorPos + 1);
 
-                    // set lastBOS if it null
+                    // if lastBuildOrderStep is null it has to be the first
+                    // build order step
                     if (lastBuildOrderStep == null)
                     {
                         bos.IsActive = true;

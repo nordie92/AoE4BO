@@ -128,7 +128,7 @@
     <Content Include="Dlls\SharpDX.dll" />
     <Content Include="Dlls\SharpDX.DXGI.dll" />
     <Content Include="Dlls\Tesseract.dll" />
-    <Content Include="pfeifen.wav">
+    <Content Include="notification.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
