@@ -72,39 +72,37 @@ namespace AoE4BO
 
         private void DoWork(object state)
         {
-            try
+            while (!_stopDrawThread)
             {
-                Global.OverlayState = OverlayState.WaitForAEO;
-                while (System.Diagnostics.Process.GetProcessesByName("RelicCardinal").Length == 0)
+                try
                 {
-                    if (_stopDrawThread)
-                        return;
+                    Global.OverlayState = OverlayState.WaitForAEO;
+                    while (System.Diagnostics.Process.GetProcessesByName("RelicCardinal").Length == 0)
+                    {
+                        if (_stopDrawThread)
+                            return;
 
-                    Thread.Sleep(500);
+                        Thread.Sleep(500);
+                    }
+                    var process = System.Diagnostics.Process.GetProcessesByName("RelicCardinal")[0];
+                    _processSharp = new ProcessSharp(process, MemoryType.Remote);
+
+                    var d3DOverlay = (Overlay)this;
+                    Console.WriteLine(_processSharp.WindowFactory.MainWindow);
+                    d3DOverlay.Initialize(_processSharp.WindowFactory.MainWindow);
+                    d3DOverlay.Enable();
+
+                    // create gfx objects
+                    _gfxObject = new GfxBuildOrder(OverlayWindow.Graphics, null, _buildOrder);
+
+                    Global.OverlayState = OverlayState.Running;
+                    while (!_stopDrawThread)
+                        d3DOverlay.Update();
                 }
-                Thread.Sleep(15000);
-                var process = System.Diagnostics.Process.GetProcessesByName("RelicCardinal")[0];
-                _processSharp = new ProcessSharp(process, MemoryType.Remote);
-
-                var d3DOverlay = (Overlay)this;
-                d3DOverlay.Initialize(_processSharp.WindowFactory.MainWindow);
-                d3DOverlay.Enable();
-
-                // create gfx objects
-                _gfxObject = new GfxBuildOrder(OverlayWindow.Graphics, null, _buildOrder);
-
-                Global.OverlayState = OverlayState.Running;
-                while (!_stopDrawThread)
-                    d3DOverlay.Update();
-            }
-            catch (Exception)
-            {
-                Global.OverlayState = OverlayState.Error;
-            }
-            finally
-            {
-                if (!_stopDrawThread)
-                    DoWork(state);
+                catch (Exception)
+                {
+                    Global.OverlayState = OverlayState.Error;
+                }
             }
         }
 
