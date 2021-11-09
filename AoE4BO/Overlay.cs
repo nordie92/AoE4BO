@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Threading;
 using Overlay.NET.Common;
 using Overlay.NET.Directx;
@@ -10,8 +9,7 @@ using Process.NET.Windows;
 
 namespace AoE4BO
 {
-    [RegisterPlugin("DirectXverlayDemo-1", "NAME", "DirectXOverlayDemo", "0.0",
-        "A basic demo of the DirectXoverlay.")]
+    [RegisterPlugin("DirectXverlayDemo-1", "NAME", "DirectXOverlayDemo", "0.0", "A basic demo of the DirectXoverlay.")]
     public class Overlay : DirectXOverlayPlugin
     {
         private readonly TickEngine _tickEngine = new TickEngine();

@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Tesseract;
 
 namespace AoE4BO
@@ -55,23 +51,27 @@ namespace AoE4BO
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
+            Bitmap screenshot;
 
             while (!_stopOCRThread)
             {
                 try
                 {
-                    Bitmap screenshot = TakeScreenshot();
+                    screenshot = TakeScreenshot();
 
+                    // process ocr from supply
                     Rectangle area1 = GetRelativeRectangle(new Rectangle(Global.Settings.SupplyX, Global.Settings.SupplyY, Global.Settings.SupplyWidth, Global.Settings.SupplyHeight));
                     string s = Recognize(screenshot, "Supply", area1, Global.Settings.SupplyContrast, Global.Settings.SupplyScale, Global.Settings.SupplyGrayscale, true);
                     string[] strSupply = s.Split('/');
 
+                    // stop if it failed
                     if (strSupply.Length != 2)
                     {
                         ErrorHandling(false);
                         continue;
                     }
 
+                    // process ocr for resources
                     Rectangle area2 = GetRelativeRectangle(new Rectangle(Global.Settings.FoodX, Global.Settings.FoodY, Global.Settings.FoodWidth, Global.Settings.FoodHeight));
                     string strFood = Recognize(screenshot, "Food", area2, Global.Settings.FoodContrast, Global.Settings.FoodScale, Global.Settings.FoodGrayscale, true).Trim();
                     Rectangle area3 = GetRelativeRectangle(new Rectangle(Global.Settings.WoodX, Global.Settings.WoodY, Global.Settings.WoodWidth, Global.Settings.WoodHeight));
@@ -83,12 +83,14 @@ namespace AoE4BO
 
                     screenshot.Dispose();
 
+                    // check if every recognition isn't empty
                     if (strFood.Length <= 0 || strWood.Length <= 0 || strGold.Length <= 0 || strStone.Length <= 0 || strFood.Length <= 0 || strFood.Length <= 0)
                     {
                         ErrorHandling(false);
                         continue;
                     }
 
+                    // try parse values
                     bool b1, b2, b3, b4, b5, b6;
                     int i1, i2, i3, i4, i5, i6;
                     b1 = int.TryParse(strSupply[0], out i1);
@@ -100,6 +102,7 @@ namespace AoE4BO
 
                     if (b1 && b2 && b3 && b4 && b5 && b6)
                     {
+                        // set game values
                         Global.GameData.Supply = i1;
                         Global.GameData.SupplyCap = i2;
                         Global.GameData.Food = i3;
@@ -178,23 +181,11 @@ namespace AoE4BO
             return text;
         }
 
-        private Bitmap InvertColors(Bitmap bm)
-        {
-            Bitmap pic = new Bitmap(bm);
-            for (int y = 0; (y <= (pic.Height - 1)); y++)
-            {
-                for (int x = 0; (x <= (pic.Width - 1)); x++)
-                {
-                    Color inv = pic.GetPixel(x, y);
-                    inv = Color.FromArgb(255, (255 - inv.R), (255 - inv.G), (255 - inv.B));
-                    pic.SetPixel(x, y, inv);
-                }
-            }
-            return pic;
-        }
-
         private void SetSettingValues(string valueName, Bitmap bitmap, string ocrText)
         {
+            if (!Global.SettingsFormOpen)
+                return;
+
             switch (valueName)
             {
                 case "Supply":
@@ -224,6 +215,21 @@ namespace AoE4BO
         {
             Image img = _printScreen.CaptureScreen(_screenArea);
             return new Bitmap(img);
+        }
+
+        private Bitmap InvertColors(Bitmap bm)
+        {
+            Bitmap pic = new Bitmap(bm);
+            for (int y = 0; (y <= (pic.Height - 1)); y++)
+            {
+                for (int x = 0; (x <= (pic.Width - 1)); x++)
+                {
+                    Color inv = pic.GetPixel(x, y);
+                    inv = Color.FromArgb(255, (255 - inv.R), (255 - inv.G), (255 - inv.B));
+                    pic.SetPixel(x, y, inv);
+                }
+            }
+            return pic;
         }
 
         public static Bitmap AdjustContrast(Bitmap Image, float Value)
