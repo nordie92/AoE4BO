@@ -124,6 +124,7 @@ namespace AoE4BO
             {
                 _buildOrder.Restart();
                 _overlay.RestartBuildOrder();
+                _ocr.Restart();
             }
         }
     }

@@ -11,13 +11,21 @@ namespace AoE4BO
 {
     public class Settings
     {
+        // config varibales
         private string _filename = "config.json";
+
+        // general settings
+        public bool PlaySound = true;
+        public float OCRMaxDowntime = 2f;
+        public int OCRInterval = 1000;
+
+        // display settings
         public int BuildOrderContainerX = 15;
         public int BuildOrderContainerY = 450;
         public int BuildOrderContainerWidth = 350;
         public int BuildOrderContainerHeight = 300;
-        public bool PlaySound = true;
-        public float OCRMaxDowntime = 2f;
+
+        // ocr settings
         public int SupplyX = 36;
         public int SupplyY = 855;
         public int SupplyWidth = 77;
@@ -56,15 +64,8 @@ namespace AoE4BO
 
         public void Save()
         {
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.Converters.Add(new JavaScriptDateTimeConverter());
-            serializer.NullValueHandling = NullValueHandling.Ignore;
-
-            using (StreamWriter sw = new StreamWriter(_filename))
-            using (JsonWriter writer = new JsonTextWriter(sw))
-            {
-                serializer.Serialize(writer, this);
-            }
+            string json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            File.WriteAllText(_filename, json, Encoding.UTF8);
         }
 
         public void Load()
@@ -75,11 +76,18 @@ namespace AoE4BO
             string json = File.ReadAllText(_filename);
             Settings settings = JsonConvert.DeserializeObject<Settings>(json);
 
+            // general settings
+            PlaySound = settings.PlaySound;
+            OCRInterval = settings.OCRInterval;
+            OCRMaxDowntime = settings.OCRMaxDowntime;
+
+            // display settings
             BuildOrderContainerX = settings.BuildOrderContainerX;
             BuildOrderContainerY = settings.BuildOrderContainerY;
             BuildOrderContainerWidth = settings.BuildOrderContainerWidth;
             BuildOrderContainerHeight = settings.BuildOrderContainerHeight;
-            PlaySound = settings.PlaySound;
+
+            // ocr settings
             SupplyX = settings.SupplyX;
             SupplyY = settings.SupplyY;
             SupplyWidth = settings.SupplyWidth;

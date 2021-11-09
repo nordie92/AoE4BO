@@ -16,8 +16,9 @@ namespace AoE4BO
     {
         private TesseractEngine _ocr;
         private PrintScreen _printScreen = new PrintScreen();
-        private Timer _timerScreenshot;
         private DateTime _lastOcrTime = DateTime.MinValue;
+        private Thread _threadOCR;
+        private bool _stopOCRThread;
 
         public OCR()
         {
@@ -29,87 +30,116 @@ namespace AoE4BO
         public void Start()
         {
             Global.OCRState = OCRState.WaitForMatch;
-            _timerScreenshot = new Timer(new TimerCallback(Tick), null, 500, 500);
+
+            _stopOCRThread = false;
+            _threadOCR = new Thread(new ParameterizedThreadStart(DoOCRWork));
+            _threadOCR.IsBackground = true;
+            _threadOCR.Start();
+        }
+
+        public void Restart()
+        {
+            Global.OCRState = OCRState.WaitForMatch;
         }
 
         public void Stop()
         {
-            if (_timerScreenshot != null)
-            {
-                _timerScreenshot.Dispose();
-                _timerScreenshot = null;
-            }
+            _threadOCR.Abort();
+            _stopOCRThread = true;
         }
 
-        private void Tick(object state)
+        private void DoOCRWork(object obj)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            Bitmap screenshot = TakeScreenshot();
-
-            string s = Recognize(screenshot, "Supply",
-                new Rectangle(Global.Settings.SupplyX, Global.Settings.SupplyY, Global.Settings.SupplyWidth, Global.Settings.SupplyHeight),
-                Global.Settings.SupplyContrast, Global.Settings.SupplyScale, Global.Settings.SupplyGrayscale, true);
-            string[] strSupply = s.Split('/');
-
-            if (strSupply.Length != 2)
+            while (!_stopOCRThread)
             {
-                ErrorHandling();
-                return;
-            }
+                Console.WriteLine("starrt " + _stopOCRThread);
+                try
+                {
+                    Bitmap screenshot = TakeScreenshot();
 
-            string strFood = Recognize(screenshot, "Food",
-                new Rectangle(Global.Settings.FoodX, Global.Settings.FoodY, Global.Settings.FoodWidth, Global.Settings.FoodHeight),
-                Global.Settings.FoodContrast, Global.Settings.FoodScale, Global.Settings.FoodGrayscale, true);
-            string strWood = Recognize(screenshot, "Wood",
-                new Rectangle(Global.Settings.WoodX, Global.Settings.WoodY, Global.Settings.WoodWidth, Global.Settings.WoodHeight),
-                Global.Settings.WoodContrast, Global.Settings.WoodScale, Global.Settings.WoodGrayscale, true);
-            string strGold = Recognize(screenshot, "Gold",
-                new Rectangle(Global.Settings.GoldX, Global.Settings.GoldY, Global.Settings.GoldWidth, Global.Settings.GoldHeight),
-                Global.Settings.GoldContrast, Global.Settings.GoldScale, Global.Settings.GoldGrayscale, true);
-            string strStone = Recognize(screenshot,  "Stone",
-                new Rectangle(Global.Settings.StoneX, Global.Settings.StoneY, Global.Settings.StoneWidth, Global.Settings.StoneHeight),
-                Global.Settings.StoneContrast, Global.Settings.StoneScale, Global.Settings.StoneGrayscale, true);
+                    string s = Recognize(screenshot, "Supply",
+                        new Rectangle(Global.Settings.SupplyX, Global.Settings.SupplyY, Global.Settings.SupplyWidth, Global.Settings.SupplyHeight),
+                        Global.Settings.SupplyContrast, Global.Settings.SupplyScale, Global.Settings.SupplyGrayscale, true);
+                    string[] strSupply = s.Split('/');
 
-            screenshot.Dispose();
+                    if (strSupply.Length != 2)
+                    {
+                        ErrorHandling(false);
+                        continue;
+                    }
 
-            bool b1, b2, b3, b4, b5, b6;
-            int i1, i2, i3, i4, i5, i6;
-            b1 = int.TryParse(strSupply[0], out i1);
-            b2 = int.TryParse(strSupply[1], out i2);
-            b3 = int.TryParse(strFood, out i3);
-            b4 = int.TryParse(strWood, out i4);
-            b5 = int.TryParse(strGold, out i5);
-            b6 = int.TryParse(strStone, out i6);
+                    string strFood = Recognize(screenshot, "Food",
+                        new Rectangle(Global.Settings.FoodX, Global.Settings.FoodY, Global.Settings.FoodWidth, Global.Settings.FoodHeight),
+                        Global.Settings.FoodContrast, Global.Settings.FoodScale, Global.Settings.FoodGrayscale, true);
+                    string strWood = Recognize(screenshot, "Wood",
+                        new Rectangle(Global.Settings.WoodX, Global.Settings.WoodY, Global.Settings.WoodWidth, Global.Settings.WoodHeight),
+                        Global.Settings.WoodContrast, Global.Settings.WoodScale, Global.Settings.WoodGrayscale, true);
+                    string strGold = Recognize(screenshot, "Gold",
+                        new Rectangle(Global.Settings.GoldX, Global.Settings.GoldY, Global.Settings.GoldWidth, Global.Settings.GoldHeight),
+                        Global.Settings.GoldContrast, Global.Settings.GoldScale, Global.Settings.GoldGrayscale, true);
+                    string strStone = Recognize(screenshot, "Stone",
+                        new Rectangle(Global.Settings.StoneX, Global.Settings.StoneY, Global.Settings.StoneWidth, Global.Settings.StoneHeight),
+                        Global.Settings.StoneContrast, Global.Settings.StoneScale, Global.Settings.StoneGrayscale, true);
 
-            sw.Stop();
-            Global.OCRProcessTime = (int)sw.ElapsedMilliseconds;
+                    screenshot.Dispose();
 
-            if (b1 && b2 && b3 && b4 && b5 && b6)
-            {
-                Global.GameData.Supply = i1;
-                Global.GameData.SupplyCap = i2;
-                Global.GameData.Food = i3;
-                Global.GameData.Wood = i4;
-                Global.GameData.Gold = i5;
-                Global.GameData.Stone = i6;
+                    bool b1, b2, b3, b4, b5, b6;
+                    int i1, i2, i3, i4, i5, i6;
+                    b1 = int.TryParse(strSupply[0], out i1);
+                    b2 = int.TryParse(strSupply[1], out i2);
+                    b3 = int.TryParse(strFood, out i3);
+                    b4 = int.TryParse(strWood, out i4);
+                    b5 = int.TryParse(strGold, out i5);
+                    b6 = int.TryParse(strStone, out i6);
 
-                _lastOcrTime = DateTime.Now;
-                Global.OCRDowntime = 0f;
+                    if (b1 && b2 && b3 && b4 && b5 && b6)
+                    {
+                        Global.GameData.Supply = i1;
+                        Global.GameData.SupplyCap = i2;
+                        Global.GameData.Food = i3;
+                        Global.GameData.Wood = i4;
+                        Global.GameData.Gold = i5;
+                        Global.GameData.Stone = i6;
 
-                Global.OCRState = OCRState.Success;
-            }
-            else
-            {
-                ErrorHandling();
+                        _lastOcrTime = DateTime.Now;
+                        Global.OCRDowntime = 0f;
+
+                        Global.OCRState = OCRState.Success;
+                    }
+                    else
+                    {
+                        ErrorHandling(false);
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("exc");
+                    ErrorHandling(true);
+                }
+
+                Global.OCRProcessTime = (int)sw.ElapsedMilliseconds;
+
+                Thread.Sleep(Math.Max(0, Global.Settings.OCRInterval - (int)sw.ElapsedMilliseconds));
+
+                Console.WriteLine("OCR Loop: " + (int)sw.ElapsedMilliseconds);
+
+                sw.Restart();
             }
         }
 
-        private void ErrorHandling()
+        private void ErrorHandling(bool exception)
         {
             if (_lastOcrTime != DateTime.MinValue)
                 Global.OCRDowntime = (float)(DateTime.Now - _lastOcrTime).TotalSeconds;
+
+            if (exception)
+            {
+                Global.OCRState = OCRState.Error;
+                return;
+            }
 
             if (Global.OCRState != OCRState.WaitForMatch)
             {
