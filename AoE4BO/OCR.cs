@@ -19,6 +19,7 @@ namespace AoE4BO
         private DateTime _lastOcrTime = DateTime.MinValue;
         private Thread _threadOCR;
         private bool _stopOCRThread;
+        private Rectangle _screenArea;
 
         public OCR()
         {
@@ -29,6 +30,8 @@ namespace AoE4BO
 
         public void Start()
         {
+            _screenArea = GetOCRAreaRec();
+
             Global.OCRState = OCRState.WaitForMatch;
 
             _stopOCRThread = false;
@@ -55,14 +58,12 @@ namespace AoE4BO
 
             while (!_stopOCRThread)
             {
-                Console.WriteLine("starrt " + _stopOCRThread);
                 try
                 {
                     Bitmap screenshot = TakeScreenshot();
 
-                    string s = Recognize(screenshot, "Supply",
-                        new Rectangle(Global.Settings.SupplyX, Global.Settings.SupplyY, Global.Settings.SupplyWidth, Global.Settings.SupplyHeight),
-                        Global.Settings.SupplyContrast, Global.Settings.SupplyScale, Global.Settings.SupplyGrayscale, true);
+                    Rectangle area1 = GetRelativeRectangle(new Rectangle(Global.Settings.SupplyX, Global.Settings.SupplyY, Global.Settings.SupplyWidth, Global.Settings.SupplyHeight));
+                    string s = Recognize(screenshot, "Supply", area1, Global.Settings.SupplyContrast, Global.Settings.SupplyScale, Global.Settings.SupplyGrayscale, true);
                     string[] strSupply = s.Split('/');
 
                     if (strSupply.Length != 2)
@@ -71,20 +72,22 @@ namespace AoE4BO
                         continue;
                     }
 
-                    string strFood = Recognize(screenshot, "Food",
-                        new Rectangle(Global.Settings.FoodX, Global.Settings.FoodY, Global.Settings.FoodWidth, Global.Settings.FoodHeight),
-                        Global.Settings.FoodContrast, Global.Settings.FoodScale, Global.Settings.FoodGrayscale, true);
-                    string strWood = Recognize(screenshot, "Wood",
-                        new Rectangle(Global.Settings.WoodX, Global.Settings.WoodY, Global.Settings.WoodWidth, Global.Settings.WoodHeight),
-                        Global.Settings.WoodContrast, Global.Settings.WoodScale, Global.Settings.WoodGrayscale, true);
-                    string strGold = Recognize(screenshot, "Gold",
-                        new Rectangle(Global.Settings.GoldX, Global.Settings.GoldY, Global.Settings.GoldWidth, Global.Settings.GoldHeight),
-                        Global.Settings.GoldContrast, Global.Settings.GoldScale, Global.Settings.GoldGrayscale, true);
-                    string strStone = Recognize(screenshot, "Stone",
-                        new Rectangle(Global.Settings.StoneX, Global.Settings.StoneY, Global.Settings.StoneWidth, Global.Settings.StoneHeight),
-                        Global.Settings.StoneContrast, Global.Settings.StoneScale, Global.Settings.StoneGrayscale, true);
+                    Rectangle area2 = GetRelativeRectangle(new Rectangle(Global.Settings.FoodX, Global.Settings.FoodY, Global.Settings.FoodWidth, Global.Settings.FoodHeight));
+                    string strFood = Recognize(screenshot, "Food", area2, Global.Settings.FoodContrast, Global.Settings.FoodScale, Global.Settings.FoodGrayscale, true).Trim();
+                    Rectangle area3 = GetRelativeRectangle(new Rectangle(Global.Settings.WoodX, Global.Settings.WoodY, Global.Settings.WoodWidth, Global.Settings.WoodHeight));
+                    string strWood = Recognize(screenshot, "Wood", area3, Global.Settings.WoodContrast, Global.Settings.WoodScale, Global.Settings.WoodGrayscale, true).Trim();
+                    Rectangle area4 = GetRelativeRectangle(new Rectangle(Global.Settings.GoldX, Global.Settings.GoldY, Global.Settings.GoldWidth, Global.Settings.GoldHeight));
+                    string strGold = Recognize(screenshot, "Gold", area4, Global.Settings.GoldContrast, Global.Settings.GoldScale, Global.Settings.GoldGrayscale, true).Trim();
+                    Rectangle area5 = GetRelativeRectangle(new Rectangle(Global.Settings.StoneX, Global.Settings.StoneY, Global.Settings.StoneWidth, Global.Settings.StoneHeight));
+                    string strStone = Recognize(screenshot, "Stone", area5, Global.Settings.StoneContrast, Global.Settings.StoneScale, Global.Settings.StoneGrayscale, true).Trim();
 
                     screenshot.Dispose();
+
+                    if (strFood.Length <= 0 || strWood.Length <= 0 || strGold.Length <= 0 || strStone.Length <= 0 || strFood.Length <= 0 || strFood.Length <= 0)
+                    {
+                        ErrorHandling(false);
+                        continue;
+                    }
 
                     bool b1, b2, b3, b4, b5, b6;
                     int i1, i2, i3, i4, i5, i6;
@@ -106,7 +109,6 @@ namespace AoE4BO
 
                         _lastOcrTime = DateTime.Now;
                         Global.OCRDowntime = 0f;
-
                         Global.OCRState = OCRState.Success;
                     }
                     else
@@ -116,17 +118,14 @@ namespace AoE4BO
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("exc");
                     ErrorHandling(true);
                 }
-
-                Global.OCRProcessTime = (int)sw.ElapsedMilliseconds;
-
-                Thread.Sleep(Math.Max(0, Global.Settings.OCRInterval - (int)sw.ElapsedMilliseconds));
-
-                Console.WriteLine("OCR Loop: " + (int)sw.ElapsedMilliseconds);
-
-                sw.Restart();
+                finally
+                {
+                    Global.OCRProcessTime = (int)sw.ElapsedMilliseconds;
+                    Thread.Sleep(Math.Max(0, Global.Settings.OCRInterval - (int)sw.ElapsedMilliseconds));
+                    sw.Restart();
+                }
             }
         }
 
@@ -159,7 +158,6 @@ namespace AoE4BO
                 bm = RemoveNoise(bm);
             if (contrast > 0f)
                 bm = AdjustContrast(bm, contrast);
-            //bm = RemoveNoise(bm);
             bm = InvertColors(bm);
 
             Page page = _ocr.Process(bm);
@@ -224,7 +222,7 @@ namespace AoE4BO
 
         private Bitmap TakeScreenshot()
         {
-            Image img = _printScreen.CaptureScreen();
+            Image img = _printScreen.CaptureScreen(_screenArea);
             return new Bitmap(img);
         }
 
@@ -353,5 +351,61 @@ namespace AoE4BO
             return destImage;
         }
 
+        private Rectangle GetOCRAreaRec()
+        {
+            int xMin, xMax, yMin, yMax;
+
+            xMin = Global.Settings.SupplyX;
+            xMax = Global.Settings.SupplyX + Global.Settings.SupplyWidth;
+            yMin = Global.Settings.SupplyY;
+            yMax = Global.Settings.SupplyY + Global.Settings.SupplyHeight;
+
+            if (Global.Settings.FoodX < xMin)
+                xMin = Global.Settings.FoodX;
+            if (Global.Settings.FoodX + Global.Settings.FoodWidth > xMax)
+                xMax = Global.Settings.FoodX + Global.Settings.FoodWidth;
+            if (Global.Settings.WoodX < xMin)
+                xMin = Global.Settings.WoodX;
+            if (Global.Settings.WoodX + Global.Settings.WoodWidth > xMax)
+                xMax = Global.Settings.WoodX + Global.Settings.WoodWidth;
+            if (Global.Settings.GoldX < xMin)
+                xMin = Global.Settings.GoldX;
+            if (Global.Settings.GoldX + Global.Settings.GoldWidth > xMax)
+                xMax = Global.Settings.GoldX + Global.Settings.GoldWidth;
+            if (Global.Settings.StoneX < xMin)
+                xMin = Global.Settings.StoneX;
+            if (Global.Settings.StoneX + Global.Settings.StoneWidth > xMax)
+                xMax = Global.Settings.StoneX + Global.Settings.StoneWidth;
+
+            if (Global.Settings.FoodY < yMin)
+                yMin = Global.Settings.FoodY;
+            if (Global.Settings.FoodY + Global.Settings.FoodHeight > yMax)
+                yMax = Global.Settings.FoodY + Global.Settings.FoodHeight;
+            if (Global.Settings.WoodY < yMin)
+                yMin = Global.Settings.WoodY;
+            if (Global.Settings.WoodY + Global.Settings.WoodHeight > yMax)
+                yMax = Global.Settings.WoodY + Global.Settings.WoodHeight;
+            if (Global.Settings.GoldY < yMin)
+                yMin = Global.Settings.GoldY;
+            if (Global.Settings.GoldY + Global.Settings.GoldHeight > yMax)
+                yMax = Global.Settings.GoldY + Global.Settings.GoldHeight;
+            if (Global.Settings.StoneY < yMin)
+                yMin = Global.Settings.StoneY;
+            if (Global.Settings.StoneY + Global.Settings.StoneHeight > yMax)
+                yMax = Global.Settings.StoneY + Global.Settings.StoneHeight;
+
+            Rectangle r = new Rectangle(xMin, yMin, xMax - xMin, yMax - yMin);
+            return r;
+        }
+
+        private Rectangle GetRelativeRectangle(Rectangle substractor)
+        {
+            return new Rectangle(
+                substractor.X - _screenArea.X,
+                substractor.Y - _screenArea.Y,
+                substractor.Width,
+                substractor.Height
+                );
+        }
     }
 }

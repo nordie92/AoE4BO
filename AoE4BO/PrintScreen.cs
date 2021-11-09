@@ -14,9 +14,9 @@ namespace AoE4BO
         /// Creates an Image object containing a screen shot of the entire desktop
         /// </summary>
         /// <returns></returns>
-        public Image CaptureScreen()
+        public Image CaptureScreen(Rectangle area)
         {
-            return CaptureWindow(User32.GetDesktopWindow());
+            return CaptureWindow(User32.GetDesktopWindow(), area);
         }
 
         /// <summary>
@@ -24,24 +24,19 @@ namespace AoE4BO
         /// </summary>
         /// <param name="handle">The handle to the window. (In windows forms, this is obtained by the Handle property)</param>
         /// <returns></returns>
-        public Image CaptureWindow(IntPtr handle)
+        public Image CaptureWindow(IntPtr handle, Rectangle area)
         {
             // get te hDC of the target window
             IntPtr hdcSrc = User32.GetWindowDC(handle);
-            // get the size
-            User32.RECT windowRect = new User32.RECT();
-            User32.GetWindowRect(handle, ref windowRect);
-            int width = windowRect.right - windowRect.left;
-            int height = windowRect.bottom - windowRect.top;
             // create a device context we can copy to
             IntPtr hdcDest = GDI32.CreateCompatibleDC(hdcSrc);
             // create a bitmap we can copy it to,
             // using GetDeviceCaps to get the width/height
-            IntPtr hBitmap = GDI32.CreateCompatibleBitmap(hdcSrc, width, height);
+            IntPtr hBitmap = GDI32.CreateCompatibleBitmap(hdcSrc, area.Width, area.Height);
             // select the bitmap object
             IntPtr hOld = GDI32.SelectObject(hdcDest, hBitmap);
             // bitblt over
-            GDI32.BitBlt(hdcDest, 0, 0, width, height, hdcSrc, 0, 0, GDI32.SRCCOPY);
+            GDI32.BitBlt(hdcDest, 0, 0, area.Width, area.Height, hdcSrc, area.X, area.Y, GDI32.SRCCOPY);
             // restore selection
             GDI32.SelectObject(hdcDest, hOld);
             // clean up
@@ -62,9 +57,9 @@ namespace AoE4BO
         /// <param name="handle"></param>
         /// <param name="filename"></param>
         /// <param name="format"></param>
-        public void CaptureWindowToFile(IntPtr handle, string filename, ImageFormat format)
+        public void CaptureWindowToFile(IntPtr handle, string filename, ImageFormat format, Rectangle area)
         {
-            Image img = CaptureWindow(handle);
+            Image img = CaptureWindow(handle, area);
             img.Save(filename, format);
         }
 
@@ -73,9 +68,9 @@ namespace AoE4BO
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="format"></param>
-        public void CaptureScreenToFile(string filename, ImageFormat format)
+        public void CaptureScreenToFile(string filename, ImageFormat format, Rectangle area)
         {
-            Image img = CaptureScreen();
+            Image img = CaptureScreen(area);
             img.Save(filename, format);
         }
 

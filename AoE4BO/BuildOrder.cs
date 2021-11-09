@@ -157,7 +157,7 @@ namespace AoE4BO
                     }
 
                     // parse instructions
-                    string instruction = line.Substring(seperatorPos + 1);
+                    string instruction = line.Substring(seperatorPos + 1).Trim();
 
                     // if lastBuildOrderStep is null it has to be the first
                     // build order step

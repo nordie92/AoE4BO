@@ -16,7 +16,7 @@ namespace AoE4BO
 
         // general settings
         public bool PlaySound = true;
-        public float OCRMaxDowntime = 2f;
+        public float OCRMaxDowntime = 5f;
         public int OCRInterval = 1000;
 
         // display settings
