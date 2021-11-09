@@ -448,7 +448,7 @@
             this.groupBox2.Size = new System.Drawing.Size(586, 103);
             this.groupBox2.TabIndex = 31;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Text Recognizion - Supply";
+            this.groupBox2.Text = "Text Recognition - Supply";
             // 
             // groupBox3
             // 
@@ -472,7 +472,7 @@
             this.groupBox3.Size = new System.Drawing.Size(586, 103);
             this.groupBox3.TabIndex = 31;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Text Recognizion - Food";
+            this.groupBox3.Text = "Text Recognition - Food";
             // 
             // lbFood
             // 
@@ -641,7 +641,7 @@
             this.groupBox4.Size = new System.Drawing.Size(586, 103);
             this.groupBox4.TabIndex = 31;
             this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Text Recognizion - Wood";
+            this.groupBox4.Text = "Text Recognition - Wood";
             // 
             // lbWood
             // 
@@ -810,7 +810,7 @@
             this.groupBox5.Size = new System.Drawing.Size(586, 103);
             this.groupBox5.TabIndex = 31;
             this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "Text Recognizion - Gold";
+            this.groupBox5.Text = "Text Recognition - Gold";
             // 
             // lbGold
             // 
@@ -979,7 +979,7 @@
             this.groupBox6.Size = new System.Drawing.Size(586, 103);
             this.groupBox6.TabIndex = 31;
             this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "Text Recognizion - Stone";
+            this.groupBox6.Text = "Text Recognition - Stone";
             // 
             // lbStone
             // 
