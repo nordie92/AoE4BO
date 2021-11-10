@@ -24,6 +24,9 @@ namespace AoE4BO
         // instruction variable
         public List<string> Instructions { get; set; }
 
+        // Comment
+        public string Comment = "";
+
         // state variables
         public bool IsActive { get; set; }
         public bool IsDone { get; set; }

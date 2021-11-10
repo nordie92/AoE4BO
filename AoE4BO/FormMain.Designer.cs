@@ -41,9 +41,10 @@
             // lbState
             // 
             this.lbState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lbState.Location = new System.Drawing.Point(137, 285);
+            this.lbState.Location = new System.Drawing.Point(91, 185);
+            this.lbState.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lbState.Name = "lbState";
-            this.lbState.Size = new System.Drawing.Size(295, 31);
+            this.lbState.Size = new System.Drawing.Size(197, 20);
             this.lbState.TabIndex = 14;
             this.lbState.Text = "No build order selected...";
             this.lbState.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -51,9 +52,10 @@
             // btnOpenBO
             // 
             this.btnOpenBO.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnOpenBO.Location = new System.Drawing.Point(16, 320);
+            this.btnOpenBO.Location = new System.Drawing.Point(11, 208);
+            this.btnOpenBO.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.btnOpenBO.Name = "btnOpenBO";
-            this.btnOpenBO.Size = new System.Drawing.Size(130, 58);
+            this.btnOpenBO.Size = new System.Drawing.Size(87, 38);
             this.btnOpenBO.TabIndex = 7;
             this.btnOpenBO.Text = "Open build order file";
             this.btnOpenBO.UseVisualStyleBackColor = true;
@@ -68,9 +70,10 @@
             // btnSettings
             // 
             this.btnSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSettings.Location = new System.Drawing.Point(308, 320);
+            this.btnSettings.Location = new System.Drawing.Point(205, 208);
+            this.btnSettings.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.btnSettings.Name = "btnSettings";
-            this.btnSettings.Size = new System.Drawing.Size(124, 58);
+            this.btnSettings.Size = new System.Drawing.Size(83, 38);
             this.btnSettings.TabIndex = 7;
             this.btnSettings.Text = "Settings";
             this.btnSettings.UseVisualStyleBackColor = true;
@@ -79,9 +82,10 @@
             // btnBoFromClipboard
             // 
             this.btnBoFromClipboard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnBoFromClipboard.Location = new System.Drawing.Point(153, 320);
+            this.btnBoFromClipboard.Location = new System.Drawing.Point(102, 208);
+            this.btnBoFromClipboard.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.btnBoFromClipboard.Name = "btnBoFromClipboard";
-            this.btnBoFromClipboard.Size = new System.Drawing.Size(148, 58);
+            this.btnBoFromClipboard.Size = new System.Drawing.Size(99, 38);
             this.btnBoFromClipboard.TabIndex = 7;
             this.btnBoFromClipboard.Text = "Open build order from clipboard";
             this.btnBoFromClipboard.UseVisualStyleBackColor = true;
@@ -90,10 +94,9 @@
             // btnRestartBO
             // 
             this.btnRestartBO.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRestartBO.Location = new System.Drawing.Point(17, 283);
-            this.btnRestartBO.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnRestartBO.Location = new System.Drawing.Point(11, 184);
             this.btnRestartBO.Name = "btnRestartBO";
-            this.btnRestartBO.Size = new System.Drawing.Size(104, 31);
+            this.btnRestartBO.Size = new System.Drawing.Size(69, 20);
             this.btnRestartBO.TabIndex = 16;
             this.btnRestartBO.Text = "Restart BO";
             this.btnRestartBO.UseVisualStyleBackColor = true;
@@ -105,26 +108,28 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbBuildOrder.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.rtbBuildOrder.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbBuildOrder.Location = new System.Drawing.Point(18, 18);
-            this.rtbBuildOrder.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.rtbBuildOrder.DetectUrls = false;
+            this.rtbBuildOrder.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rtbBuildOrder.Location = new System.Drawing.Point(12, 12);
             this.rtbBuildOrder.Name = "rtbBuildOrder";
             this.rtbBuildOrder.ReadOnly = true;
-            this.rtbBuildOrder.Size = new System.Drawing.Size(414, 255);
+            this.rtbBuildOrder.Size = new System.Drawing.Size(277, 167);
             this.rtbBuildOrder.TabIndex = 17;
             this.rtbBuildOrder.Text = "";
+            this.rtbBuildOrder.WordWrap = false;
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(452, 395);
+            this.ClientSize = new System.Drawing.Size(301, 257);
             this.Controls.Add(this.rtbBuildOrder);
             this.Controls.Add(this.btnRestartBO);
             this.Controls.Add(this.lbState);
             this.Controls.Add(this.btnSettings);
             this.Controls.Add(this.btnBoFromClipboard);
             this.Controls.Add(this.btnOpenBO);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "FormMain";
             this.ShowIcon = false;
             this.Text = "AoE4 Build Order";

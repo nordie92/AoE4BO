@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace AoE4BO
 {
@@ -15,6 +12,8 @@ namespace AoE4BO
         public BuildOrderStep CurrentBuildOrderStep { get; set; }
         private Timer _timerUpdate;
         private Stopwatch _stopwatch;
+        public delegate void MyEventHandler(object source, EventArgs e);
+        public event MyEventHandler StepFinished;
 
         public BuildOrder(string buildOrderString)
         {
@@ -81,6 +80,8 @@ namespace AoE4BO
                 if (CurrentBuildOrderStep.NextBuildOrderStep == null)
                     Global.BoState = BoState.Finish;
 
+                StepFinished(this, new EventArgs());
+
                 if (Global.Settings.PlaySound)
                 {
                     System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"notification.wav");
@@ -113,6 +114,7 @@ namespace AoE4BO
             try
             {
                 BuildOrderStep lastBuildOrderStep = null;
+                string comment = "";
 
                 string[] lines = buildOrderString.Split('\n');
                 foreach (string lineRaw in lines)
@@ -122,7 +124,12 @@ namespace AoE4BO
 
                     // if line is a comment or empty skip this loop
                     if (line.Length == 0 || line[0] == '#')
+                    {
+                        if (comment.Length > 0)
+                            comment += "\n";
+                        comment += line;
                         continue;
+                    }
 
                     int seperatorPos = line.IndexOf(':');
 
@@ -167,6 +174,9 @@ namespace AoE4BO
                         bos.Instructions.Add(instruction);
                         lastBuildOrderStep = bos;
                         FirstBuildOrderStep = bos;
+
+                        bos.Comment = comment;
+                        comment = "";
                     }
                     else
                     {
@@ -184,6 +194,9 @@ namespace AoE4BO
                             bos.PrevBuildOrderStep = lastBuildOrderStep;
 
                             lastBuildOrderStep = bos;
+
+                            bos.Comment = comment;
+                            comment = "";
                         }
 
                     }

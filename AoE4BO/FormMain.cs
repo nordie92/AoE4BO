@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -11,6 +12,7 @@ namespace AoE4BO
         private OCR _ocr;
         private Overlay _overlay;
         private BuildOrder _buildOrder;
+        private bool _stepFinished;
 
         public FormMain()
         {
@@ -62,6 +64,13 @@ namespace AoE4BO
                 lbState.Text = "Build order finished!";
                 lbState.ForeColor = Color.Green;
             }
+
+            if (_stepFinished)
+            {
+                _stepFinished = false;
+                rtbBuildOrder.Text = "";
+                FillRichTextBox(_buildOrder);
+            }
         }
 
         private void LoadBuildOrder(string buildOrderString)
@@ -70,11 +79,13 @@ namespace AoE4BO
             {
                 _buildOrder = new BuildOrder(buildOrderString);
                 _buildOrder.Start();
+                _buildOrder.StepFinished += _buildOrder_StepFinished;
 
                 _overlay.StartBuildOrder(_buildOrder);
                 _ocr.Start();
 
-                rtbBuildOrder.Text = buildOrderString;
+                rtbBuildOrder.Text = "";
+                FillRichTextBox(_buildOrder);
             }
             catch (Exception ex)
             {
@@ -83,6 +94,11 @@ namespace AoE4BO
                 else
                     throw ex;
             }
+        }
+
+        private void _buildOrder_StepFinished(object source, EventArgs e)
+        {
+            _stepFinished = true;
         }
 
         private void btnOpenBO_Click(object sender, EventArgs e)
@@ -118,6 +134,69 @@ namespace AoE4BO
                 _overlay.RestartBuildOrder();
                 _ocr.Restart();
             }
+        }
+
+        private void FillRichTextBox(BuildOrder buildOrder)
+        {
+            int reqWidth = GetRequirementsWidth(buildOrder);
+
+            BuildOrderStep bos = buildOrder.FirstBuildOrderStep;
+            do
+            {
+                if (bos.Comment.Length > 0)
+                    AppendText(rtbBuildOrder, bos.Comment + "\n", Color.Gray);
+
+                int i = 0;
+                List<string> reqs = bos.GetRequirementStrings();
+                List<string> instructs = bos.Instructions;
+                string req = " ";
+                string ins = " ";
+                Color color = bos.IsActive ? Color.Green : Color.Black;
+                while (req.Length != 0 && ins.Length != 0)
+                {
+                    req = reqs.Count > i ? reqs[i] : "";
+                    ins = instructs.Count > i ? instructs[i] : "";
+                    AppendText(rtbBuildOrder, FillLetters(req.Replace(";", " "), reqWidth) + " " + ins + "\n", color);
+                    i++;
+                }
+
+                bos = bos.NextBuildOrderStep;
+            } while (bos != null);
+        }
+
+        private int GetRequirementsWidth(BuildOrder buildOrder)
+        {
+            int width = 0;
+            BuildOrderStep bos = buildOrder.FirstBuildOrderStep;
+            do
+            {
+                List<string> reqs = bos.GetRequirementStrings();
+                foreach (string req in reqs)
+                    if (width < req.Length)
+                        width = req.Length;
+
+                bos = bos.NextBuildOrderStep;
+            } while (bos != null);
+
+            return width;
+        }
+
+        private void AppendText(RichTextBox box, string text, Color color)
+        {
+            box.SelectionStart = box.TextLength;
+            box.SelectionLength = 0;
+
+            box.SelectionColor = color;
+            box.AppendText(text);
+            box.SelectionColor = box.ForeColor;
+        }
+
+        private string FillLetters(string input, int length)
+        {
+            string ret = input;
+            for (int i = 0; i < length - input.Length; i++)
+                ret = " " + ret;
+            return ret;
         }
     }
 }
