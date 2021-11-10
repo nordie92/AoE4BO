@@ -68,7 +68,6 @@ namespace AoE4BO
             if (_stepFinished)
             {
                 _stepFinished = false;
-                rtbBuildOrder.Text = "";
                 FillRichTextBox(_buildOrder);
             }
         }
@@ -84,7 +83,6 @@ namespace AoE4BO
                 _overlay.StartBuildOrder(_buildOrder);
                 _ocr.Start();
 
-                rtbBuildOrder.Text = "";
                 FillRichTextBox(_buildOrder);
             }
             catch (Exception ex)
@@ -138,6 +136,8 @@ namespace AoE4BO
 
         private void FillRichTextBox(BuildOrder buildOrder)
         {
+            rtbBuildOrder.Text = "";
+
             int reqWidth = GetRequirementsWidth(buildOrder);
 
             BuildOrderStep bos = buildOrder.FirstBuildOrderStep;

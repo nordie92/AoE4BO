@@ -31,7 +31,7 @@ namespace AoE4BO
         public static OCRState OCRState { get; set; }
         public static float OCRDowntime { get; set; }
         public static int OCRProcessTime { get; set; }
-    }
+}
 
     public enum BoState
     {
