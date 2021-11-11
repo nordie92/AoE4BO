@@ -24,3 +24,6 @@ There are 7 possible requirements implemented: Supply(s), Supply cap(sc), food(f
 
 ## Text recognition failed
 Text recognition (to parse supply and resources) will fail if your resolution isn't 1920x1080 or if you change the ui scale. But you can solve this issue by setting up position and size of depending on the resolutions. It can help to take a screenshot from your game and find out the position of supply and resources.
+
+## Feedback please
+I can only test my code on one mashine. So i would be happy to receive feedback or error messages.
