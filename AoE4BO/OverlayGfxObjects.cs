@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Winook;
 
 namespace AoE4BO
 {
@@ -90,14 +91,10 @@ namespace AoE4BO
             }
         }
         private Direct2DRenderer _renderer;
-        public List<GfxObject> GfxObjects { get; set; }
-        public GfxObject Parent { get; set; }
 
-        public GfxObject(Direct2DRenderer renderer, GfxObject parent)
+        public GfxObject(Direct2DRenderer renderer)
         {
             _renderer = renderer;
-            GfxObjects = new List<GfxObject>();
-            Parent = parent;
         }
 
         public virtual RectangleF GetRectangle()
@@ -113,6 +110,7 @@ namespace AoE4BO
 
     public class GfxBuildOrder : GfxObject
     {
+        public List<GfxObject> GfxObjects { get; set; }
         private int _colorBack;
         private BuildOrder _buildOrder;
         private float _pixelPerSecond = 3f;
@@ -122,10 +120,13 @@ namespace AoE4BO
         private int _brushFrontRed;
         private int _brushFrontYellow;
         private int _brushBackColor;
+        private MouseHook _mouseHook;
+        private System.Diagnostics.Process _process;
 
-        public GfxBuildOrder(Direct2DRenderer renderer, GfxObject parent, BuildOrder buildOrder) : base(renderer, parent)
+        public GfxBuildOrder(Direct2DRenderer renderer, BuildOrder buildOrder, System.Diagnostics.Process process) : base(renderer)
         {
             _buildOrder = buildOrder;
+            _process = process;
 
             Position = new PointF(Global.Settings.BuildOrderContainerX, Global.Settings.BuildOrderContainerY);
             Size = new SizeF(Global.Settings.BuildOrderContainerWidth, Global.Settings.BuildOrderContainerHeight);
@@ -137,6 +138,33 @@ namespace AoE4BO
             _brushBackColor = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
 
             CreateBuildOrderSteps(renderer, buildOrder);
+
+            InitMouseHook();
+        }
+
+        private void InitMouseHook()
+        {
+            _mouseHook = new MouseHook(_process.Id);
+            _mouseHook.RemoveAllHandlers();
+            _mouseHook.MessageReceived += _mouseHook_MessageReceived;
+            _mouseHook.LeftButtonDown += _mouseHook_LeftButtonDown;
+            _mouseHook.LeftButtonUp += _mouseHook_LeftButtonUp;
+            _mouseHook.InstallAsync();
+        }
+
+        private void _mouseHook_LeftButtonDown(object sender, MouseMessageEventArgs e)
+        {
+
+        }
+
+        private void _mouseHook_LeftButtonUp(object sender, MouseMessageEventArgs e)
+        {
+
+        }
+
+        private void _mouseHook_MessageReceived(object sender, MouseMessageEventArgs e)
+        {
+
         }
 
         private void CreateBuildOrderSteps(Direct2DRenderer renderer, BuildOrder buildOrder)
@@ -221,13 +249,14 @@ namespace AoE4BO
 
     public class GfxBuildOrderStep : GfxObject
     {
+        public GfxObject Parent { get; set; }
+        public BuildOrderStep BuildOrderStep;
         private int _font;
         private int _colorFont;
         private int _colorBack;
         private int _colorBackActive;
-        public BuildOrderStep BuildOrderStep;
 
-        public GfxBuildOrderStep(Direct2DRenderer renderer, BuildOrderStep buildOrderStep, GfxObject parent) : base(renderer, parent)
+        public GfxBuildOrderStep(Direct2DRenderer renderer, BuildOrderStep buildOrderStep, GfxObject parent) : base(renderer)
         {
             BuildOrderStep = buildOrderStep;
 
