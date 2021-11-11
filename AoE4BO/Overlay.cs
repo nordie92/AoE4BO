@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Threading;
 using Overlay.NET.Common;
 using Overlay.NET.Directx;
 using Process.NET;
 using Process.NET.Memory;
 using Process.NET.Windows;
+using Winook;
 
 namespace AoE4BO
 {
@@ -19,6 +21,7 @@ namespace AoE4BO
         private GfxObject _gfxObject;
         private bool _stopDrawThread = false;
         private BuildOrder _buildOrder;
+        private string _processName = "RelicCardinal";
 
         public Overlay()
         {
@@ -70,20 +73,30 @@ namespace AoE4BO
 
         private void DoWork(object state)
         {
+            _processName = "notepad";
+
             while (!_stopDrawThread)
             {
                 try
                 {
                     Global.OverlayState = OverlayState.WaitForAEO;
-                    while (System.Diagnostics.Process.GetProcessesByName("RelicCardinal").Length == 0)
+                    while (System.Diagnostics.Process.GetProcessesByName(_processName).Length == 0)
                     {
                         if (_stopDrawThread)
                             return;
 
                         Thread.Sleep(500);
                     }
-                    var process = System.Diagnostics.Process.GetProcessesByName("RelicCardinal")[0];
+                    var process = System.Diagnostics.Process.GetProcessesByName(_processName)[0];
                     _processSharp = new ProcessSharp(process, MemoryType.Remote);
+
+                    // mouse hook
+                    MouseHook mh = new MouseHook(process.Id);
+                    mh.RemoveAllHandlers();
+                    mh.MessageReceived += Mh_MessageReceived;
+                    mh.LeftButtonDown += Mh_LeftButtonDown;
+                    mh.LeftButtonUp += Mh_LeftButtonUp;
+                    mh.InstallAsync();
 
                     var d3DOverlay = (Overlay)this;
                     Console.WriteLine(_processSharp.WindowFactory.MainWindow);
@@ -102,6 +115,26 @@ namespace AoE4BO
                     Global.OverlayState = OverlayState.Error;
                 }
             }
+        }
+
+        private void Mh_LeftButtonUp(object sender, MouseMessageEventArgs e)
+        {
+            Console.WriteLine("up");
+            Size size = new Size(e.X - _startPos.X, e.Y - _startPos.Y);
+            Console.WriteLine(size);
+        }
+
+        private void Mh_LeftButtonDown(object sender, MouseMessageEventArgs e)
+        {
+            Console.WriteLine("down");
+            _startPos = new Point(e.X, e.Y);
+        }
+
+        private Point _startPos;
+
+        private void Mh_MessageReceived(object sender, MouseMessageEventArgs e)
+        {
+            Console.WriteLine("move " + e.X + ", " + e.Y);
         }
 
         private void OnTick(object sender, EventArgs e)
