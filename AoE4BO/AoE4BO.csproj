@@ -123,6 +123,7 @@
     </Compile>
     <Compile Include="GameData.cs" />
     <Compile Include="Global.cs" />
+    <Compile Include="MouseDetection.cs" />
     <Compile Include="OCR.cs" />
     <Compile Include="Overlay.cs" />
     <Compile Include="OverlayGfxObjects.cs" />
