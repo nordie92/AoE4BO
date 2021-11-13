@@ -66,7 +66,7 @@ namespace AoE4BO
             bool b4 = WoodRequired == -1 || wood >= WoodRequired;
             bool b5 = GoldRequired == -1 || gold >= GoldRequired;
             bool b6 = StoneRequired == -1 || stone >= StoneRequired;
-            bool b7 = TimeRequired == -1 || TimeActive >= TimeRequired;
+            bool b7 = (TimeRequired == -1 && TimeActive >= 1f) || (TimeRequired != -1 && TimeActive >= TimeRequired);
 
             return b1 && b2 && b3 && b4 && b5 && b6 && b7;
         }

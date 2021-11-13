@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-namespace TestGlobalMouseEvents
+namespace AoE4BO
 {
     /// <summary>
     /// Class for intercepting low level Windows mouse hooks.
@@ -75,7 +75,7 @@ namespace TestGlobalMouseEvents
         /// <returns>Hook ID</returns>
         private IntPtr SetHook(MouseHookHandler proc)
         {
-            using (ProcessModule module = Process.GetCurrentProcess().MainModule)
+            using (ProcessModule module = System.Diagnostics.Process.GetCurrentProcess().MainModule)
                 return SetWindowsHookEx(WH_MOUSE_LL, proc, GetModuleHandle(module.ModuleName), 0);
         }
 

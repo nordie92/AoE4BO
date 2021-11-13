@@ -8,14 +8,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using GlobalLowLevelHooks;
 
 namespace TestGlobalMouseEvents
 {
     public partial class Form1 : Form
     {
-        MouseHook mouseHook;
-        KeyboardHook keyboardHook;
+        MouseHookHelper _mouseHookHelper;
 
         public Form1()
         {
@@ -24,50 +22,37 @@ namespace TestGlobalMouseEvents
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // Create the Mouse Hook
-            mouseHook = new MouseHook();
+            _mouseHookHelper = new MouseHookHelper("Spotify");
+            _mouseHookHelper.OnClick += MouseHook_OnClick;
+            _mouseHookHelper.OnDrag += MouseHook_OnDrag;
 
-            // Create the Keyboard Hook
-            keyboardHook = new KeyboardHook();
-
-            // Capture the events
-            mouseHook.MouseMove += new MouseHook.MouseHookCallback(mouseHook_MouseMove);
-
-
-            //Installing the Mouse Hooks
-            mouseHook.Install();
-            // Using the Keyboard Hook:
-
-            // Capture the events
-            keyboardHook.KeyDown += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
-            keyboardHook.KeyUp += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
-
-            //Installing the Keyboard Hooks
-            keyboardHook.Install();
+            ForegroundTracker.Start();
         }
 
-        private void keyboardHook_KeyUp(KeyboardHook.VKeys key)
+        private void btnRegister_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("c");
+            _mouseHookHelper.InstallHooks();
         }
 
-        private void keyboardHook_KeyDown(KeyboardHook.VKeys key)
+        private void btnRemove_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("b");
-        }
-
-        private void mouseHook_MouseMove(MouseHook.MSLLHOOKSTRUCT mouseStruct)
-        {
-            Console.WriteLine("a");
+            _mouseHookHelper.DeinstallHooks();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            keyboardHook.KeyDown -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
-            keyboardHook.KeyUp -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
-            keyboardHook.Uninstall();
-            mouseHook.MouseMove -= new MouseHook.MouseHookCallback(mouseHook_MouseMove);
-            mouseHook.Uninstall();
+            _mouseHookHelper.DeinstallHooks();
+            ForegroundTracker.Stop();
+        }
+
+        private void MouseHook_OnClick(object source, MouseClickEventArgs e)
+        {
+            richTextBox1.AppendText("Click at (" + e.X + "," + e.Y + ")\n");
+        }
+
+        private void MouseHook_OnDrag(object source, MouseDragEventArgs e)
+        {
+            richTextBox1.AppendText("Drag from (" + e.OrigX + "," + e.OrigY + ") to (" + e.X + "," + e.Y + ")\n");
         }
     }
 }

@@ -95,7 +95,7 @@ namespace AoE4BO
                     d3DOverlay.Enable();
 
                     // create gfx objects
-                    _gfxBuildOrder = new GfxBuildOrder(OverlayWindow.Graphics, _buildOrder, process);
+                    _gfxBuildOrder = new GfxBuildOrder(OverlayWindow.Graphics, _buildOrder);
 
                     Global.OverlayState = OverlayState.Running;
                     while (!_stopDrawThread)
