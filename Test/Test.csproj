@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="GlobalLowLevelHooks">
+      <HintPath>C:\Users\mmaar\Downloads\GlobalLowLevelHooks.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
