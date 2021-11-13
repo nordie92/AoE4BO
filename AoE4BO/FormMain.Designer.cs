@@ -53,7 +53,7 @@
             // 
             this.btnOpenBO.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnOpenBO.Location = new System.Drawing.Point(11, 208);
-            this.btnOpenBO.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnOpenBO.Margin = new System.Windows.Forms.Padding(2);
             this.btnOpenBO.Name = "btnOpenBO";
             this.btnOpenBO.Size = new System.Drawing.Size(87, 38);
             this.btnOpenBO.TabIndex = 7;
@@ -71,7 +71,7 @@
             // 
             this.btnSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnSettings.Location = new System.Drawing.Point(205, 208);
-            this.btnSettings.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnSettings.Margin = new System.Windows.Forms.Padding(2);
             this.btnSettings.Name = "btnSettings";
             this.btnSettings.Size = new System.Drawing.Size(83, 38);
             this.btnSettings.TabIndex = 7;
@@ -83,7 +83,7 @@
             // 
             this.btnBoFromClipboard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnBoFromClipboard.Location = new System.Drawing.Point(102, 208);
-            this.btnBoFromClipboard.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnBoFromClipboard.Margin = new System.Windows.Forms.Padding(2);
             this.btnBoFromClipboard.Name = "btnBoFromClipboard";
             this.btnBoFromClipboard.Size = new System.Drawing.Size(99, 38);
             this.btnBoFromClipboard.TabIndex = 7;
@@ -129,7 +129,8 @@
             this.Controls.Add(this.btnSettings);
             this.Controls.Add(this.btnBoFromClipboard);
             this.Controls.Add(this.btnOpenBO);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
+            this.MinimumSize = new System.Drawing.Size(317, 296);
             this.Name = "FormMain";
             this.ShowIcon = false;
             this.Text = "AoE4 Build Order";

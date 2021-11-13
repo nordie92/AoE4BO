@@ -2,10 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Winook;
 
 namespace AoE4BO
 {
@@ -120,13 +116,13 @@ namespace AoE4BO
         private int _brushFrontRed;
         private int _brushFrontYellow;
         private int _brushBackColor;
-        private MouseHook _mouseHook;
         private System.Diagnostics.Process _process;
 
         public GfxBuildOrder(Direct2DRenderer renderer, BuildOrder buildOrder, System.Diagnostics.Process process) : base(renderer)
         {
             _buildOrder = buildOrder;
             _process = process;
+            GfxObjects = new List<GfxObject>();
 
             Position = new PointF(Global.Settings.BuildOrderContainerX, Global.Settings.BuildOrderContainerY);
             Size = new SizeF(Global.Settings.BuildOrderContainerWidth, Global.Settings.BuildOrderContainerHeight);
@@ -138,33 +134,6 @@ namespace AoE4BO
             _brushBackColor = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
 
             CreateBuildOrderSteps(renderer, buildOrder);
-
-            InitMouseHook();
-        }
-
-        private void InitMouseHook()
-        {
-            _mouseHook = new MouseHook(_process.Id);
-            _mouseHook.RemoveAllHandlers();
-            _mouseHook.MessageReceived += _mouseHook_MessageReceived;
-            _mouseHook.LeftButtonDown += _mouseHook_LeftButtonDown;
-            _mouseHook.LeftButtonUp += _mouseHook_LeftButtonUp;
-            _mouseHook.InstallAsync();
-        }
-
-        private void _mouseHook_LeftButtonDown(object sender, MouseMessageEventArgs e)
-        {
-
-        }
-
-        private void _mouseHook_LeftButtonUp(object sender, MouseMessageEventArgs e)
-        {
-
-        }
-
-        private void _mouseHook_MessageReceived(object sender, MouseMessageEventArgs e)
-        {
-
         }
 
         private void CreateBuildOrderSteps(Direct2DRenderer renderer, BuildOrder buildOrder)
@@ -244,6 +213,11 @@ namespace AoE4BO
                 Renderer.FillRectangle(15, (int)(Y + Height + 3), 200, 18, _brushBackColor);
                 Renderer.DrawText("OCR can't detect game values!", _font, _brushFrontRed, 18, (int)(Y + Height) + 5);
             }
+
+            foreach (GfxObject gfxObj in GfxObjects)
+            {
+                gfxObj.Draw();
+            }
         }
     }
 
@@ -259,6 +233,7 @@ namespace AoE4BO
         public GfxBuildOrderStep(Direct2DRenderer renderer, BuildOrderStep buildOrderStep, GfxObject parent) : base(renderer)
         {
             BuildOrderStep = buildOrderStep;
+            Parent = parent;
 
             _font = renderer.CreateFont("Arial", 15);
             _colorFont = renderer.CreateBrush(Color.FromArgb(0, 0, 0, 0));

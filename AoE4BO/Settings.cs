@@ -13,6 +13,7 @@ namespace AoE4BO
         public bool PlaySound = true;
         public float OCRMaxDowntime = 5f;
         public int OCRInterval = 1000;
+        public string ProcessName = "RelicCardinal";
 
         // display settings
         public int BuildOrderContainerX = 15;

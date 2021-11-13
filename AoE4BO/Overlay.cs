@@ -16,7 +16,7 @@ namespace AoE4BO
         private Thread _thread;
         private ProcessSharp _processSharp;
         private Stopwatch _gameTime;
-        private GfxObject _gfxObject;
+        private GfxBuildOrder _gfxBuildOrder;
         private bool _stopDrawThread = false;
         private BuildOrder _buildOrder;
 
@@ -50,10 +50,12 @@ namespace AoE4BO
 
         public void RestartBuildOrder()
         {
-            if (OverlayWindow != null)
+            if (_buildOrder != null)
             {
-                // create gfx objects
-                _gfxObject = new GfxBuildOrder(OverlayWindow.Graphics, null, _buildOrder);
+                StopBuildOrder();
+                while (_stopDrawThread)
+                    Thread.Sleep(100);
+                StartBuildOrder(_buildOrder);
             }
         }
 
@@ -74,15 +76,17 @@ namespace AoE4BO
             {
                 try
                 {
+                    string processName = Global.Settings.ProcessName;
+
                     Global.OverlayState = OverlayState.WaitForAEO;
-                    while (System.Diagnostics.Process.GetProcessesByName("RelicCardinal").Length == 0)
+                    while (System.Diagnostics.Process.GetProcessesByName(processName).Length == 0)
                     {
                         if (_stopDrawThread)
                             return;
 
                         Thread.Sleep(500);
                     }
-                    var process = System.Diagnostics.Process.GetProcessesByName("RelicCardinal")[0];
+                    var process = System.Diagnostics.Process.GetProcessesByName(processName)[0];
                     _processSharp = new ProcessSharp(process, MemoryType.Remote);
 
                     var d3DOverlay = (Overlay)this;
@@ -91,7 +95,7 @@ namespace AoE4BO
                     d3DOverlay.Enable();
 
                     // create gfx objects
-                    _gfxObject = new GfxBuildOrder(OverlayWindow.Graphics, null, _buildOrder);
+                    _gfxBuildOrder = new GfxBuildOrder(OverlayWindow.Graphics, _buildOrder, process);
 
                     Global.OverlayState = OverlayState.Running;
                     while (!_stopDrawThread)
@@ -100,6 +104,11 @@ namespace AoE4BO
                 catch (Exception)
                 {
                     Global.OverlayState = OverlayState.Error;
+                }
+                finally
+                {
+                    _stopDrawThread = false;
+                    Thread.Sleep(2000);
                 }
             }
         }
@@ -156,18 +165,10 @@ namespace AoE4BO
             OverlayWindow.Graphics.ClearScene();
 
             // start recusive draw function
-            if (_gfxObject != null)
-                DrawGfxObjects(_gfxObject);
+            if (_gfxBuildOrder != null)
+                _gfxBuildOrder.Draw();
 
             OverlayWindow.Graphics.EndScene();
-        }
-
-        private void DrawGfxObjects(GfxObject gfxObject)
-        {
-            gfxObject.Draw();
-
-            foreach (GfxObject gfxObj in gfxObject.GfxObjects)
-                DrawGfxObjects(gfxObj);
         }
 
         public override void Dispose()
