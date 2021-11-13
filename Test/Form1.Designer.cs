@@ -1,5 +1,5 @@
 ﻿
-namespace Test
+namespace TestGlobalMouseEvents
 {
     partial class Form1
     {

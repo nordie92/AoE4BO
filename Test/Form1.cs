@@ -10,7 +10,7 @@ using System.Text;
 using System.Windows.Forms;
 using GlobalLowLevelHooks;
 
-namespace Test
+namespace TestGlobalMouseEvents
 {
     public partial class Form1 : Form
     {

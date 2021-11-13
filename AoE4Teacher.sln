@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AoE4BO", "AoE4BO\AoE4BO.csproj", "{10DB8952-0BA2-443C-8FBC-B54340BB7558}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{5AB8E675-C1FA-4B5D-A9D4-DC4522200E80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestGlobalMouseEvents", "Test\TestGlobalMouseEvents.csproj", "{5AB8E675-C1FA-4B5D-A9D4-DC4522200E80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
