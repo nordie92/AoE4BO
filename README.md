@@ -22,13 +22,13 @@ Create a text file and write down one line for every instruction.
 At first you have to define the requirements. For example "7s" (when reaches 7 supply). Or "7s,100f" (when reaches 7 supply and 100 food). Next close this requirement section by typing ":". Finally write down the instruction, "build house" for example.
 There are 7 possible requirements implemented: Supply(s), Supply cap(sc), food(f), wood(w), gold(g), stone(st) and time(t, in seconds). If you want to write more then one instruction just repeat the same requirements on the next line.
 
-Example:
-7s: When 7 Supply
-20sc: When 20 SupplyCap
-200f: When you reached 200 food
-200w: When you reached 200 wood
-200g: When you reached 200 gold
-200st: When you reached 200 stone
+Example:  
+7s: When 7 Supply  
+20sc: When 20 SupplyCap  
+200f: When you reached 200 food  
+200w: When you reached 200 wood  
+200g: When you reached 200 gold  
+200st: When you reached 200 stone  
 2t: When 2 seconds pased
 
 ## Text recognition failed
