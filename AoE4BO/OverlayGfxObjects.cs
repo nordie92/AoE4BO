@@ -446,7 +446,7 @@ namespace AoE4BO
             int y = (int)Parent.Y + (int)Y;
 
             Renderer.FillRectangle((int)XGlobal, (int)YGlobal, (int)Width - 1, (int)Height, GfxBuildOrder.ColorBack);
-            Renderer.DrawLine((int)XGlobal + (int)Width, (int)YGlobal, (int)XGlobal + (int)Width, (int)YGlobal + (int)Height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawRectangle((int)XGlobal, (int)YGlobal, (int)Width, (int)Height, 2f, GfxBuildOrder.ColorFront);
             Renderer.DrawText(text, GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 2, y + 3);
         }
     }
@@ -474,8 +474,8 @@ namespace AoE4BO
             int width = (int)Width;
             int height = (int)Height;
 
-            Renderer.FillRectangle((int)XGlobal + 3, (int)YGlobal, (int)Width - 4, (int)Height, GfxBuildOrder.ColorBack);
-            Renderer.DrawLine(x + width, y, x + width, y + height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.FillRectangle((int)XGlobal + 3, (int)YGlobal, (int)Width - 2, (int)Height, GfxBuildOrder.ColorBack);
+            Renderer.DrawRectangle((int)XGlobal + 2, (int)YGlobal, (int)Width, (int)Height, 2f, GfxBuildOrder.ColorFront);
             Renderer.DrawText("Restart", GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 3, y + 3);
         }
     }
@@ -487,7 +487,7 @@ namespace AoE4BO
         {
             int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
 
-            Position = new PointF(78f, 0f);
+            Position = new PointF(80f, 0f);
             Size = new SizeF(30f, headserHeight);
         }
 
@@ -515,7 +515,7 @@ namespace AoE4BO
         {
             int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
 
-            Position = new PointF(108f, 0f);
+            Position = new PointF(110f, 0f);
             Size = new SizeF(30f, headserHeight);
         }
 
