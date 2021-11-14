@@ -56,7 +56,6 @@ namespace AoE4BO
         static void WinEventProc(IntPtr hWinEventHook, uint eventType,
             IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
-            Debug.WriteLine("Foreground changed to {0:x8}", hwnd.ToInt32());
             //Console.WriteLine("ObjectID changed to {0:x8}", idObject);
             //Console.WriteLine("ChildID changed to {0:x8}", idChild);
             GetForegroundProcessName();
@@ -78,15 +77,10 @@ namespace AoE4BO
             {
                 if (p.Id == pid)
                 {
-                    Debug.WriteLine("Pid is: {0}", pid);
-                    Debug.WriteLine("Process name is {0}", p.ProcessName);
                     ProcessName = p.ProcessName;
                     return;
                 }
-                //return;
             }
-
-            Debug.WriteLine("Unknown");
         }
     }
 }

@@ -255,24 +255,29 @@ namespace AoE4BO
 
         public override void Draw()
         {
-
             if (!Hide && Global.BoState == BoState.Running && Global.OCRState != OCRState.WaitForMatch)
             {
                 Renderer.FillRectangle((int)X, (int)Y, (int)Width, (int)Height, GfxBuildOrder.ColorBack);
 
                 // scroll build order steps down
-                _targetY = GetActiveStepY();
-                OffsetY = _targetY;
+                float difference = GetActiveStepY() - OffsetY;
+                if (Math.Abs(difference) > 0.4f)
+                {
+                    if (difference > 0f)
+                        OffsetY += Math.Max(difference / 5f, 0.2f);
+                    else if (difference < 0f)
+                        OffsetY += Math.Min(difference / 5f, -0.2f);
+                }
 
                 // show ocr problem text
                 if (Global.OCRState == OCRState.Warning)
                 {
-                    Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
+                    //Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
                     Renderer.DrawText("OCR can't detect game values!", GfxBuildOrder.Font, GfxBuildOrder.ColorWarning, (int)X + 141, (int)Y + 3);
                 }
                 else if (Global.OCRState == OCRState.Error)
                 {
-                    Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
+                    //Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
                     Renderer.DrawText("OCR can't detect game values!", GfxBuildOrder.Font, GfxBuildOrder.ColorError, (int)X + 141, (int)Y + 3);
                 }
             }
@@ -328,6 +333,8 @@ namespace AoE4BO
             if (BuildOrderStep.IsDone)
                 return;
             if (yGlobal < Parent.Y + (Parent as GfxBuildOrder).HeaderHeight)
+                return;
+            if (yGlobal + Height > Parent.Y + Parent.Height)
                 return;
 
             int color = BuildOrderStep.IsActive ? GfxBuildOrder.ColorSuccess : GfxBuildOrder.ColorBack;
