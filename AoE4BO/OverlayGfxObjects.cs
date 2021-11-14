@@ -5,6 +5,7 @@ using System.Drawing;
 
 namespace AoE4BO
 {
+    // ################################### GfxObject ###################################
     public class GfxObject
     {
         public PointF Position
@@ -104,24 +105,26 @@ namespace AoE4BO
         }
     }
 
+    // ################################# GfxBuildOrder ################################
     public class GfxBuildOrder : GfxObject
     {
         public List<GfxObject> GfxObjects { get; set; }
-        private int _colorBack;
         public BuildOrder BuildOrder;
-        private float _pixelPerSecond = 3f;
+        public int HeaderHeight = 20;
         private float _targetY;
-        private float _currentY;
-        private int _font;
-        private int _brushFrontRed;
-        private int _brushFrontYellow;
-        private int _brushBackColor;
         public bool Hide;
         public float OffsetY;
         private bool _resizeActive;
         private Point _resizeLastPos;
         private bool _positionActive;
         private Point _positionLastPos;
+
+        public static int Font;
+        public static int ColorFront;
+        public static int ColorBack;
+        public static int ColorSuccess;
+        public static int ColorWarning;
+        public static int ColorError;
 
         public GfxBuildOrder(Direct2DRenderer renderer, BuildOrder buildOrder) : base(renderer)
         {
@@ -134,11 +137,13 @@ namespace AoE4BO
             Position = new PointF(Global.Settings.BuildOrderContainerX, Global.Settings.BuildOrderContainerY);
             Size = new SizeF(Global.Settings.BuildOrderContainerWidth, Global.Settings.BuildOrderContainerHeight);
 
-            _colorBack = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
-            _font = renderer.CreateFont("Arial", 12);
-            _brushFrontRed = renderer.CreateBrush(Color.FromArgb(200, 255, 0, 0));
-            _brushFrontYellow = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 0));
-            _brushBackColor = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
+            ColorFront = renderer.CreateBrush(Color.FromArgb(200, 0, 0, 0));
+            ColorBack = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
+            ColorSuccess = renderer.CreateBrush(Color.FromArgb(255, 162, 245, 99));
+            ColorWarning = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 0));
+            ColorError = renderer.CreateBrush(Color.FromArgb(200, 255, 0, 0));
+
+            Font = renderer.CreateFont("Arial", 12);
 
             CreateBuildOrderSteps(renderer, buildOrder);
             GfxObjects.Add(new GfxButtonHide(renderer, this));
@@ -250,10 +255,10 @@ namespace AoE4BO
 
         public override void Draw()
         {
+
             if (!Hide && Global.BoState == BoState.Running && Global.OCRState != OCRState.WaitForMatch)
             {
-                // draw container rectangle
-                Renderer.FillRectangle((int)X, (int)Y, (int)Width, (int)Height, _colorBack);
+                Renderer.FillRectangle((int)X, (int)Y, (int)Width, (int)Height, GfxBuildOrder.ColorBack);
 
                 // scroll build order steps down
                 _targetY = GetActiveStepY();
@@ -262,17 +267,23 @@ namespace AoE4BO
                 // show ocr problem text
                 if (Global.OCRState == OCRState.Warning)
                 {
-                    Renderer.FillRectangle(15, (int)(Y + Height + 3), 200, 18, _brushBackColor);
-                    Renderer.DrawText("OCR can't detect game values!", _font, _brushFrontYellow, 18, (int)(Y + Height) + 5);
+                    Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
+                    Renderer.DrawText("OCR can't detect game values!", GfxBuildOrder.Font, GfxBuildOrder.ColorWarning, (int)X + 141, (int)Y + 3);
                 }
                 else if (Global.OCRState == OCRState.Error)
                 {
-                    Renderer.FillRectangle(15, (int)(Y + Height + 3), 200, 18, _brushBackColor);
-                    Renderer.DrawText("OCR can't detect game values!", _font, _brushFrontRed, 18, (int)(Y + Height) + 5);
+                    Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
+                    Renderer.DrawText("OCR can't detect game values!", GfxBuildOrder.Font, GfxBuildOrder.ColorError, (int)X + 141, (int)Y + 3);
                 }
             }
 
             DrawChildren();
+
+            if (!Hide && Global.BoState == BoState.Running && Global.OCRState != OCRState.WaitForMatch)
+            {
+                Renderer.DrawRectangle((int)X, (int)Y, (int)Width, (int)Height, 2f, GfxBuildOrder.ColorFront);
+                Renderer.DrawLine((int)X, (int)Y + HeaderHeight, (int)X + (int)Width, (int)Y + HeaderHeight, 2f, GfxBuildOrder.ColorFront);
+            }
         }
 
         private void DrawChildren()
@@ -297,24 +308,16 @@ namespace AoE4BO
         }
     }
 
+    // ############################### GfxBuildOrderStep ###############################
     public class GfxBuildOrderStep : GfxObject
     {
         public GfxObject Parent { get; set; }
         public BuildOrderStep BuildOrderStep;
-        private int _font;
-        private int _colorFont;
-        private int _colorBack;
-        private int _colorBackActive;
 
         public GfxBuildOrderStep(Direct2DRenderer renderer, BuildOrderStep buildOrderStep, GfxObject parent) : base(renderer)
         {
             BuildOrderStep = buildOrderStep;
             Parent = parent;
-
-            _font = renderer.CreateFont("Arial", 15);
-            _colorFont = renderer.CreateBrush(Color.FromArgb(0, 0, 0, 0));
-            _colorBack = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
-            _colorBackActive = renderer.CreateBrush(Color.FromArgb(200, 0, 1, 0));
         }
 
         public override void Draw()
@@ -324,10 +327,10 @@ namespace AoE4BO
 
             if (BuildOrderStep.IsDone)
                 return;
-            if (yGlobal < Parent.Y)
+            if (yGlobal < Parent.Y + (Parent as GfxBuildOrder).HeaderHeight)
                 return;
 
-            int color = BuildOrderStep.IsActive ? _colorBackActive : _colorBack;
+            int color = BuildOrderStep.IsActive ? GfxBuildOrder.ColorSuccess : GfxBuildOrder.ColorBack;
 
             Renderer.FillRectangle((int)X + (int)Parent.X, yGlobal, width, (int)Height, color);
 
@@ -335,26 +338,24 @@ namespace AoE4BO
             foreach (string req in BuildOrderStep.GetRequirementStrings())
             {
                 string[] s = req.Split(';');
-                Renderer.DrawText(s[0], _font, _colorFont, (int)X + 5 + (int)Parent.X, yGlobal + 5 + offset);
-                Renderer.DrawText(s[1], _font, _colorFont, (int)X + 45 + (int)Parent.X, yGlobal + 5 + offset);
+                Renderer.DrawText(s[0], GfxBuildOrder.Font, GfxBuildOrder.ColorFront, (int)X + 5 + (int)Parent.X, yGlobal + 5 + offset);
+                Renderer.DrawText(s[1], GfxBuildOrder.Font, GfxBuildOrder.ColorFront, (int)X + 45 + (int)Parent.X, yGlobal + 5 + offset);
                 offset += 20;
             }
 
             offset = 0;
             foreach (string instruction in BuildOrderStep.Instructions)
             {
-                Renderer.DrawText(instruction, _font, _colorFont, (int)X + 105 + (int)Parent.X, yGlobal + 5 + offset);
+                Renderer.DrawText(instruction, GfxBuildOrder.Font, GfxBuildOrder.ColorFront, (int)X + 105 + (int)Parent.X, yGlobal + 5 + offset);
                 offset += 20;
             }
         }
     }
 
+    // ################################### GfxButton ###################################
     public class GfxButton : GfxObject
     {
         public GfxObject Parent { get; set; }
-        public int Font;
-        public int ColorFont;
-        public int ColorBack;
         public float XGlobal
         {
             get
@@ -389,17 +390,18 @@ namespace AoE4BO
         {
             Parent = parent;
 
-            Font = renderer.CreateFont("Arial", 12);
-            ColorFont = renderer.CreateBrush(Color.FromArgb(0, 0, 0, 0));
-            ColorBack = renderer.CreateBrush(Color.FromArgb(200, 225, 225, 225));
-
             Position = new PointF(0f, 0f);
             Size = new SizeF(20f, 20f);
         }
 
         public virtual bool PointContains(int x, int y)
         {
-            return RectangleGlobal.Contains(x, y);
+            int x2 = (int)(Parent as GfxBuildOrder).X + (int)X;
+            int y2 = (int)(Parent as GfxBuildOrder).Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
+
+            return new Rectangle(x2, y2, width, height).Contains(x, y);
         }
 
         public virtual void ClickIfHit(int x, int y)
@@ -414,14 +416,15 @@ namespace AoE4BO
         }
     }
 
+    // ################################# GfxButtonHide #################################
     public class GfxButtonHide : GfxButton
     {
-        private SizeF _gap = new SizeF(0f, 2f);
-
         public GfxButtonHide(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
         {
-            Position = new PointF(_gap.Width, _gap.Height);
-            Size = new SizeF(32f, 14f);
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(0f, 0f);
+            Size = new SizeF(37f, headserHeight);
         }
 
         public override void Click()
@@ -432,19 +435,24 @@ namespace AoE4BO
         public override void Draw()
         {
             string text = (Parent as GfxBuildOrder).Hide ? "Show" : "Hide";
-            Renderer.FillRectangle((int)XGlobal, (int)YGlobal + (int)Parent.Height, (int)Width, (int)Height, ColorBack);
-            Renderer.DrawText(text, Font, ColorFont, (int)XGlobal + 1, (int)YGlobal + (int)Parent.Height + 1);
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+
+            Renderer.FillRectangle((int)XGlobal, (int)YGlobal, (int)Width - 1, (int)Height, GfxBuildOrder.ColorBack);
+            Renderer.DrawLine((int)XGlobal + (int)Width, (int)YGlobal, (int)XGlobal + (int)Width, (int)YGlobal + (int)Height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText(text, GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 2, y + 3);
         }
     }
 
+    // ################################ GfxButtonRestart ################################
     public class GfxButtonRestart : GfxButton
     {
-        private SizeF _gap = new SizeF(0f, 2f);
-
         public GfxButtonRestart(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
         {
-            Position = new PointF(_gap.Width + 34f, _gap.Height);
-            Size = new SizeF(43f, 14f);
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(35f, 0f);
+            Size = new SizeF(43f, headserHeight);
         }
 
         public override void Click()
@@ -454,21 +462,26 @@ namespace AoE4BO
 
         public override void Draw()
         {
-            int x = (int)(Parent.X + X);
-            int y = (int)(Parent.Y + Parent.Height + Y);
-            Renderer.FillRectangle(x, y, (int)Width, (int)Height, ColorBack);
-            Renderer.DrawText("Restart", Font, ColorFont, x + 1, y + 1);
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
+
+            Renderer.FillRectangle((int)XGlobal + 3, (int)YGlobal, (int)Width - 4, (int)Height, GfxBuildOrder.ColorBack);
+            Renderer.DrawLine(x + width, y, x + width, y + height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText("Restart", GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 3, y + 3);
         }
     }
 
+    // ################################ GfxButtonPrevStep ################################
     public class GfxButtonPrevStep : GfxButton
     {
-        private SizeF _gap = new SizeF(0f, 2f);
-
         public GfxButtonPrevStep(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
         {
-            Position = new PointF(_gap.Width + 79f, _gap.Height);
-            Size = new SizeF(30f, 14f);
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(78f, 0f);
+            Size = new SizeF(30f, headserHeight);
         }
 
         public override void Click()
@@ -478,21 +491,25 @@ namespace AoE4BO
 
         public override void Draw()
         {
-            int x = (int)(Parent.X + X);
-            int y = (int)(Parent.Y + Parent.Height + Y);
-            Renderer.FillRectangle(x, y, (int)Width, (int)Height, ColorBack);
-            Renderer.DrawText("Prev", Font, ColorFont, x + 1, y + 1);
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
+
+            Renderer.DrawLine(x + width, y, x + width, y + height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText("Prev", GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 2, y + 3);
         }
     }
 
+    // ################################ GfxButtonNextStep ################################
     public class GfxButtonNextStep : GfxButton
     {
-        private SizeF _gap = new SizeF(0f, 2f);
-
         public GfxButtonNextStep(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
         {
-            Position = new PointF(_gap.Width + 111f, _gap.Height);
-            Size = new SizeF(30f, 14f);
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(108f, 0f);
+            Size = new SizeF(30f, headserHeight);
         }
 
         public override void Click()
@@ -502,14 +519,17 @@ namespace AoE4BO
 
         public override void Draw()
         {
-            int x = (int)(Parent.X + X);
-            int y = (int)(Parent.Y + Parent.Height + Y);
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
 
-            Renderer.FillRectangle(x, y, (int)Width, (int)Height, ColorBack);
-            Renderer.DrawText("Next", Font, ColorFont, x + 1, y + 1);
+            Renderer.DrawLine(x + width, y, x + width, y + height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText("Next", GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 2, y + 3);
         }
     }
 
+    // ################################# GfxButtonResize #################################
     public class GfxButtonResize : GfxButton
     {
         private SizeF _gap = new SizeF(0f, 5f);
@@ -542,26 +562,27 @@ namespace AoE4BO
 
             for (int i = 0; i <= Math.Min(Width, Height); i++)
             {
-                Renderer.DrawLine(start.X, start.Y, end.X, end.Y, 1f, ColorBack);
+                Renderer.DrawLine(start.X, start.Y, end.X, end.Y, 1f, GfxBuildOrder.ColorFront);
                 start.X += 1;
                 end.Y += 1;
             }
         }
     }
 
+    // ################################ GfxButtonPosition ################################
     public class GfxButtonPosition : GfxButton
     {
         public GfxButtonPosition(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
         {
             Size = new SizeF(20f, 10f);
-            ColorBack = renderer.CreateBrush(Color.FromArgb(200, 125, 125, 125));
         }
 
         public override bool PointContains(int x, int y)
         {
             int x2 = (int)(Parent.X);
             int y2 = (int)(Parent.Y);
-            return new Rectangle(x2, y2, (int)Parent.Width, (int)Height).Contains(x, y);
+            int headerHeight = (Parent as GfxBuildOrder).HeaderHeight;
+            return new Rectangle(x2, y2, (int)Parent.Width, headerHeight).Contains(x, y);
         }
 
         public override void Click()
@@ -571,14 +592,7 @@ namespace AoE4BO
 
         public override void Draw()
         {
-            int x = (int)Parent.X;
-            int y = (int)Parent.Y;
-            int height = 0;
-            while (height <= Height)
-            {
-                Renderer.DrawLine(x, y + height, x + (int)Parent.Width, y + height, 2f, ColorBack);
-                height += 4;
-            }
+
         }
     }
 }
