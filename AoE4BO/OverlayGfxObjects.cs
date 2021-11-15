@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace AoE4BO
 {
-    // ################################### GfxObject ###################################
+    // ################################### GfxObject ####################################
     public class GfxObject
     {
         public PointF Position
@@ -105,7 +105,7 @@ namespace AoE4BO
         }
     }
 
-    // ################################# GfxBuildOrder ################################
+    // ################################## GfxBuildOrder #################################
     public class GfxBuildOrder : GfxObject
     {
         public List<GfxObject> GfxObjects { get; set; }
@@ -313,7 +313,7 @@ namespace AoE4BO
         }
     }
 
-    // ############################### GfxBuildOrderStep ###############################
+    // ############################### GfxBuildOrderStep ################################
     public class GfxBuildOrderStep : GfxObject
     {
         public GfxObject Parent { get; set; }
@@ -359,7 +359,7 @@ namespace AoE4BO
         }
     }
 
-    // ################################### GfxButton ###################################
+    // ################################### GfxButton ####################################
     public class GfxButton : GfxObject
     {
         public GfxObject Parent { get; set; }
@@ -423,7 +423,7 @@ namespace AoE4BO
         }
     }
 
-    // ################################# GfxButtonHide #################################
+    // ################################# GfxButtonHide ##################################
     public class GfxButtonHide : GfxButton
     {
         public GfxButtonHide(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
@@ -480,7 +480,7 @@ namespace AoE4BO
         }
     }
 
-    // ################################ GfxButtonPrevStep ################################
+    // ################################ GfxButtonPrevStep ###############################
     public class GfxButtonPrevStep : GfxButton
     {
         public GfxButtonPrevStep(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
@@ -508,7 +508,7 @@ namespace AoE4BO
         }
     }
 
-    // ################################ GfxButtonNextStep ################################
+    // ################################ GfxButtonNextStep ###############################
     public class GfxButtonNextStep : GfxButton
     {
         public GfxButtonNextStep(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
@@ -536,7 +536,7 @@ namespace AoE4BO
         }
     }
 
-    // ################################# GfxButtonResize #################################
+    // ################################# GfxButtonResize ################################
     public class GfxButtonResize : GfxButton
     {
         private SizeF _gap = new SizeF(0f, 5f);
@@ -576,7 +576,7 @@ namespace AoE4BO
         }
     }
 
-    // ################################ GfxButtonPosition ################################
+    // ################################ GfxButtonPosition ###############################
     public class GfxButtonPosition : GfxButton
     {
         public GfxButtonPosition(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)

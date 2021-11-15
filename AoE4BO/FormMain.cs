@@ -109,7 +109,7 @@ namespace AoE4BO
         private void btnOpenBO_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "AoE4BO Files|*.aoe4bo";
+            ofd.Filter = "AoE4BO Files|*.aoe4bo|All Files|*.*";
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 string buildOrderString = File.ReadAllText(ofd.FileName, Encoding.UTF8);

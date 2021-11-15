@@ -14,11 +14,13 @@ namespace AoE4BO
         private Stopwatch _stopwatch;
         public delegate void MyEventHandler(object source, EventArgs e);
         public event MyEventHandler StepRefresh;
+        private System.Media.SoundPlayer _soundPlayer;
 
         public BuildOrder(string buildOrderString)
         {
             Global.BoState = BoState.Idle;
             ParseBuildOrderString(buildOrderString);
+            _soundPlayer = new System.Media.SoundPlayer(@"notification.wav");
         }
 
         public void Start()
@@ -68,10 +70,7 @@ namespace AoE4BO
                 NextStep();
 
                 if (Global.Settings.PlaySound)
-                {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"notification.wav");
-                    player.Play();
-                }
+                    _soundPlayer.Play();
             }
 
             // adding delta time to next build order step to check time requirement

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -13,7 +14,7 @@ namespace AoE4BO
         public bool PlaySound = true;
         public float OCRMaxDowntime = 5f;
         public int OCRInterval = 1000;
-        public string ProcessName = "RelicCardinal";
+        public string[] ProcessName = new string[] { "RelicCardinal", "RelicCardinal_ws" };
 
         // display settings
         public int BuildOrderContainerX = 15;
@@ -76,6 +77,7 @@ namespace AoE4BO
             PlaySound = settings.PlaySound;
             OCRInterval = settings.OCRInterval;
             OCRMaxDowntime = settings.OCRMaxDowntime;
+            ProcessName = settings.ProcessName;
 
             // display settings
             BuildOrderContainerX = settings.BuildOrderContainerX;
