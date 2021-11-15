@@ -114,7 +114,6 @@
     </Compile>
     <Compile Include="BuildOrder.cs" />
     <Compile Include="BuildOrderStep.cs" />
-    <Compile Include="FormMain.cs" />
     <Compile Include="FormMain.Designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>

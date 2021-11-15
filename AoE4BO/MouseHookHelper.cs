@@ -17,12 +17,12 @@ namespace AoE4BO
         private bool _isMouseDown;
         private int _clickX;
         private int _clickY;
-        private string _processName;
+        private string[] _processNames;
 
-        public MouseHookHelper(string processName)
+        public MouseHookHelper(string[] processNames)
         {
             _mouseHook = new MouseHook();
-            _processName = processName;
+            _processNames = processNames;
             ForegroundTracker.Start();
         }
 
@@ -44,7 +44,7 @@ namespace AoE4BO
 
         private void _mouseHook_LeftButtonDown(MouseHook.MSLLHOOKSTRUCT mouseStruct)
         {
-            if (ForegroundTracker.ProcessName != _processName)
+            if (!ProcessAlive())
                 return;
 
             if (OnDown != null)
@@ -57,7 +57,7 @@ namespace AoE4BO
 
         private void _mouseHook_LeftButtonUp(MouseHook.MSLLHOOKSTRUCT mouseStruct)
         {
-            if (ForegroundTracker.ProcessName != _processName)
+            if (!ProcessAlive())
                 return;
 
             if (OnClick != null && _isMouseDown)
@@ -68,11 +68,16 @@ namespace AoE4BO
 
         private void _mouseHook_MouseMove(MouseHook.MSLLHOOKSTRUCT mouseStruct)
         {
-            if (ForegroundTracker.ProcessName != _processName)
+            if (!ProcessAlive())
                 return;
 
             if (OnDrag != null && _isMouseDown)
                 OnDrag(null, new MouseDragEventArgs(_clickX, _clickY, mouseStruct.pt.x, mouseStruct.pt.y));
+        }
+
+        private bool ProcessAlive()
+        {
+            return Array.IndexOf(_processNames, ForegroundTracker.ProcessName) > -1;
         }
     }
 
