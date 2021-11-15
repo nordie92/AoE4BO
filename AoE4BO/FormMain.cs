@@ -24,9 +24,16 @@ namespace AoE4BO
             Global.Settings = new Settings();
             Global.Settings.Load();
             Global.GameData = new GameData();
+            Global.MouseHook = new MouseHookHelper(Global.Settings.ProcessName);
+            Global.MouseHook.InstallHooks();
 
             _ocr = new OCR();
             _overlay = new Overlay();
+        }
+
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Global.MouseHook.DeinstallHooks();
         }
 
         private void timerUI_Tick(object sender, EventArgs e)
@@ -78,7 +85,7 @@ namespace AoE4BO
             {
                 _buildOrder = new BuildOrder(buildOrderString);
                 _buildOrder.Start();
-                _buildOrder.StepFinished += _buildOrder_StepFinished;
+                _buildOrder.StepRefresh += _buildOrder_StepFinished;
 
                 _overlay.StartBuildOrder(_buildOrder);
                 _ocr.Start();
@@ -102,7 +109,7 @@ namespace AoE4BO
         private void btnOpenBO_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "AoE4BO Files|*.aoe4bo";
+            ofd.Filter = "AoE4BO Files|*.aoe4bo|All Files|*.*";
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 string buildOrderString = File.ReadAllText(ofd.FileName, Encoding.UTF8);

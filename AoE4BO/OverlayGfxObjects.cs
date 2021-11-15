@@ -5,6 +5,7 @@ using System.Drawing;
 
 namespace AoE4BO
 {
+    // ################################### GfxObject ####################################
     public class GfxObject
     {
         public PointF Position
@@ -104,36 +105,110 @@ namespace AoE4BO
         }
     }
 
+    // ################################## GfxBuildOrder #################################
     public class GfxBuildOrder : GfxObject
     {
         public List<GfxObject> GfxObjects { get; set; }
-        private int _colorBack;
-        private BuildOrder _buildOrder;
-        private float _pixelPerSecond = 3f;
+        public BuildOrder BuildOrder;
+        public int HeaderHeight = 20;
         private float _targetY;
-        private float _currentY;
-        private int _font;
-        private int _brushFrontRed;
-        private int _brushFrontYellow;
-        private int _brushBackColor;
-        private System.Diagnostics.Process _process;
+        public bool Hide;
+        public float OffsetY;
+        private bool _resizeActive;
+        private Point _resizeLastPos;
+        private bool _positionActive;
+        private Point _positionLastPos;
 
-        public GfxBuildOrder(Direct2DRenderer renderer, BuildOrder buildOrder, System.Diagnostics.Process process) : base(renderer)
+        public static int Font;
+        public static int ColorFront;
+        public static int ColorBack;
+        public static int ColorSuccess;
+        public static int ColorWarning;
+        public static int ColorError;
+
+        public GfxBuildOrder(Direct2DRenderer renderer, BuildOrder buildOrder) : base(renderer)
         {
-            _buildOrder = buildOrder;
-            _process = process;
+            BuildOrder = buildOrder;
             GfxObjects = new List<GfxObject>();
+            Global.MouseHook.OnClick += MouseHook_OnClick;
+            Global.MouseHook.OnDrag += MouseHook_OnDrag;
+            Global.MouseHook.OnDown += MouseHook_OnDown;
 
             Position = new PointF(Global.Settings.BuildOrderContainerX, Global.Settings.BuildOrderContainerY);
             Size = new SizeF(Global.Settings.BuildOrderContainerWidth, Global.Settings.BuildOrderContainerHeight);
 
-            _colorBack = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
-            _font = renderer.CreateFont("Arial", 12);
-            _brushFrontRed = renderer.CreateBrush(Color.FromArgb(200, 255, 0, 0));
-            _brushFrontYellow = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 0));
-            _brushBackColor = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
+            ColorFront = renderer.CreateBrush(Color.FromArgb(200, 0, 0, 0));
+            ColorBack = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
+            ColorSuccess = renderer.CreateBrush(Color.FromArgb(255, 162, 245, 99));
+            ColorWarning = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 0));
+            ColorError = renderer.CreateBrush(Color.FromArgb(200, 255, 0, 0));
+
+            Font = renderer.CreateFont("Arial", 12);
 
             CreateBuildOrderSteps(renderer, buildOrder);
+            GfxObjects.Add(new GfxButtonHide(renderer, this));
+            GfxObjects.Add(new GfxButtonNextStep(renderer, this));
+            GfxObjects.Add(new GfxButtonPrevStep(renderer, this));
+            GfxObjects.Add(new GfxButtonRestart(renderer, this));
+            GfxObjects.Add(new GfxButtonResize(renderer, this));
+            GfxObjects.Add(new GfxButtonPosition(renderer, this));
+        }
+
+        private void MouseHook_OnDown(object source, MouseClickEventArgs e)
+        {
+            foreach (GfxObject gfxObj in GfxObjects)
+            {
+                if (typeof(GfxButtonResize) == gfxObj.GetType())
+                {
+                    _resizeActive = (gfxObj as GfxButtonResize).PointContains(e.X, e.Y);
+                    _resizeLastPos = new Point(e.X, e.Y);
+                }
+                else if (typeof(GfxButtonPosition) == gfxObj.GetType())
+                {
+                    _positionActive = (gfxObj as GfxButtonPosition).PointContains(e.X, e.Y);
+                    _positionLastPos = new Point(e.X, e.Y);
+                }
+            }
+        }
+
+        private void MouseHook_OnClick(object source, MouseClickEventArgs e)
+        {
+            foreach (GfxObject gfxObj in GfxObjects)
+            {
+                if (typeof(GfxButton).IsAssignableFrom(gfxObj.GetType()))
+                {
+                    (gfxObj as GfxButton).ClickIfHit(e.X, e.Y);
+                }
+            }
+
+            if (_resizeActive || _positionActive)
+            {
+                Global.Settings.BuildOrderContainerX = (int)X;
+                Global.Settings.BuildOrderContainerY = (int)Y;
+                Global.Settings.BuildOrderContainerWidth = (int)Width;
+                Global.Settings.BuildOrderContainerHeight = (int)Height;
+                Global.Settings.Save();
+            }
+
+            _resizeActive = false;
+            _positionActive = false;
+        }
+
+        private void MouseHook_OnDrag(object source, MouseDragEventArgs e)
+        {
+            if (_resizeActive)
+            {
+                Width += e.X - _resizeLastPos.X;
+                Height += e.Y - _resizeLastPos.Y;
+                _resizeLastPos = new Point(e.X, e.Y);
+            }
+
+            if (_positionActive)
+            {
+                X += e.X - _positionLastPos.X;
+                Y += e.Y - _positionLastPos.Y;
+                _positionLastPos = new Point(e.X, e.Y);
+            }
         }
 
         private void CreateBuildOrderSteps(Direct2DRenderer renderer, BuildOrder buildOrder)
@@ -154,7 +229,7 @@ namespace AoE4BO
 
                 GfxBuildOrderStep gfxBos = new GfxBuildOrderStep(renderer, bos, this);
                 gfxBos.Size = new SizeF(width, textHeight * bosLines + textGap * (bosLines + 1));
-                gfxBos.Position = new PointF(gap + X, lastY - gfxBos.Size.Height);
+                gfxBos.Position = new PointF(gap, lastY - gfxBos.Size.Height);
                 lastY = gfxBos.Position.Y - gap;
                 GfxObjects.Add(gfxBos);
 
@@ -162,15 +237,7 @@ namespace AoE4BO
             } while (bos != null);
         }
 
-        private void MoveGfx(float value)
-        {
-            foreach (GfxObject gfxObj in GfxObjects)
-            {
-                (gfxObj as GfxBuildOrderStep).Y += value;
-            }
-        }
-
-        private float GetYFromActiveBuildOrderStep()
+        private float GetActiveStepY()
         {
             float gap = 5f;
 
@@ -188,89 +255,351 @@ namespace AoE4BO
 
         public override void Draw()
         {
-            if (Global.BoState != BoState.Running || Global.OCRState == OCRState.WaitForMatch)
-                return;
-
-            // draw container rectangle
-            Renderer.FillRectangle((int)X, (int)Y, (int)Width, (int)Height, _colorBack);
-
-            // scroll build order steps down
-            _targetY = GetYFromActiveBuildOrderStep();
-            if (_targetY <= _currentY)
-                _currentY = _targetY;
-            else
-                _currentY += _pixelPerSecond;
-            MoveGfx(_currentY);
-
-            // show ocr problem text
-            if (Global.OCRState == OCRState.Warning)
+            if (!Hide && Global.BoState == BoState.Running && Global.OCRState != OCRState.WaitForMatch)
             {
-                Renderer.FillRectangle(15, (int)(Y + Height + 3), 200, 18, _brushBackColor);
-                Renderer.DrawText("OCR can't detect game values!", _font, _brushFrontYellow, 18, (int)(Y + Height) + 5);
-            }
-            else if (Global.OCRState == OCRState.Error)
-            {
-                Renderer.FillRectangle(15, (int)(Y + Height + 3), 200, 18, _brushBackColor);
-                Renderer.DrawText("OCR can't detect game values!", _font, _brushFrontRed, 18, (int)(Y + Height) + 5);
+                Renderer.FillRectangle((int)X, (int)Y, (int)Width, (int)Height, GfxBuildOrder.ColorBack);
+
+                // scroll build order steps down
+                float difference = GetActiveStepY() - OffsetY;
+                if (Math.Abs(difference) > 0.4f)
+                {
+                    if (difference > 0f)
+                        OffsetY += Math.Max(difference / 5f, 0.2f);
+                    else if (difference < 0f)
+                        OffsetY += Math.Min(difference / 5f, -0.2f);
+                }
+
+                // show ocr problem text
+                if (Global.OCRState == OCRState.Warning)
+                {
+                    //Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
+                    Renderer.DrawText("OCR can't detect game values!", GfxBuildOrder.Font, GfxBuildOrder.ColorWarning, (int)X + 141, (int)Y + 3);
+                }
+                else if (Global.OCRState == OCRState.Error)
+                {
+                    //Renderer.FillRectangle((int)X + 138, (int)Y, 200, HeaderHeight, GfxBuildOrder.ColorBack);
+                    Renderer.DrawText("OCR can't detect game values!", GfxBuildOrder.Font, GfxBuildOrder.ColorError, (int)X + 141, (int)Y + 3);
+                }
             }
 
+            DrawChildren();
+
+            if (!Hide && Global.BoState == BoState.Running && Global.OCRState != OCRState.WaitForMatch)
+            {
+                Renderer.DrawRectangle((int)X, (int)Y, (int)Width, (int)Height, 2f, GfxBuildOrder.ColorFront);
+                Renderer.DrawLine((int)X, (int)Y + HeaderHeight, (int)X + (int)Width, (int)Y + HeaderHeight, 2f, GfxBuildOrder.ColorFront);
+            }
+        }
+
+        private void DrawChildren()
+        {
             foreach (GfxObject gfxObj in GfxObjects)
             {
-                gfxObj.Draw();
+                if (gfxObj.GetType() == typeof(GfxButtonHide))
+                {
+                    gfxObj.Draw();
+                }
+                else if (gfxObj.GetType() == typeof(GfxButtonRestart))
+                {
+                    if (!Hide)
+                        gfxObj.Draw();
+                }
+                else
+                {
+                    if (!Hide && Global.BoState == BoState.Running && Global.OCRState != OCRState.WaitForMatch)
+                        gfxObj.Draw();
+                }
             }
         }
     }
 
+    // ############################### GfxBuildOrderStep ################################
     public class GfxBuildOrderStep : GfxObject
     {
         public GfxObject Parent { get; set; }
         public BuildOrderStep BuildOrderStep;
-        private int _font;
-        private int _colorFont;
-        private int _colorBack;
-        private int _colorBackActive;
 
         public GfxBuildOrderStep(Direct2DRenderer renderer, BuildOrderStep buildOrderStep, GfxObject parent) : base(renderer)
         {
             BuildOrderStep = buildOrderStep;
             Parent = parent;
-
-            _font = renderer.CreateFont("Arial", 15);
-            _colorFont = renderer.CreateBrush(Color.FromArgb(0, 0, 0, 0));
-            _colorBack = renderer.CreateBrush(Color.FromArgb(200, 255, 255, 255));
-            _colorBackActive = renderer.CreateBrush(Color.FromArgb(200, 0, 1, 0));
         }
 
         public override void Draw()
         {
+            int yGlobal = (int)(Parent as GfxBuildOrder).OffsetY + (int)Y;
+            int width = (int)Parent.Width - 10;
+
             if (BuildOrderStep.IsDone)
                 return;
-            if (Global.BoState == BoState.Finish)
+            if (yGlobal < Parent.Y + (Parent as GfxBuildOrder).HeaderHeight)
                 return;
-            if (Y < Parent.Y)
-                return;
-            if (Global.OCRState == OCRState.WaitForMatch)
+            if (yGlobal + Height > Parent.Y + Parent.Height)
                 return;
 
-            int color = BuildOrderStep.IsActive ? _colorBackActive : _colorBack;
+            int color = BuildOrderStep.IsActive ? GfxBuildOrder.ColorSuccess : GfxBuildOrder.ColorBack;
 
-            Renderer.FillRectangle((int)X, (int)Y, (int)Width, (int)Height, color);
+            Renderer.FillRectangle((int)X + (int)Parent.X, yGlobal, width, (int)Height, color);
 
             int offset = 0;
             foreach (string req in BuildOrderStep.GetRequirementStrings())
             {
                 string[] s = req.Split(';');
-                Renderer.DrawText(s[0], _font, _colorFont, (int)X + 5, (int)Y + 5 + offset);
-                Renderer.DrawText(s[1], _font, _colorFont, (int)X + 45, (int)Y + 5 + offset);
+                Renderer.DrawText(s[0], GfxBuildOrder.Font, GfxBuildOrder.ColorFront, (int)X + 5 + (int)Parent.X, yGlobal + 5 + offset);
+                Renderer.DrawText(s[1], GfxBuildOrder.Font, GfxBuildOrder.ColorFront, (int)X + 45 + (int)Parent.X, yGlobal + 5 + offset);
                 offset += 20;
             }
 
             offset = 0;
             foreach (string instruction in BuildOrderStep.Instructions)
             {
-                Renderer.DrawText(instruction, _font, _colorFont, (int)X + 105, (int)Y + 5 + offset);
+                Renderer.DrawText(instruction, GfxBuildOrder.Font, GfxBuildOrder.ColorFront, (int)X + 105 + (int)Parent.X, yGlobal + 5 + offset);
                 offset += 20;
             }
+        }
+    }
+
+    // ################################### GfxButton ####################################
+    public class GfxButton : GfxObject
+    {
+        public GfxObject Parent { get; set; }
+        public float XGlobal
+        {
+            get
+            {
+                return Parent.X + X;
+            }
+            set
+            {
+                X = value - Parent.X;
+            }
+        }
+        public float YGlobal
+        {
+            get
+            {
+                return Parent.Y + Y;
+            }
+            set
+            {
+                Y = value - Parent.Y;
+            }
+        }
+        public Rectangle RectangleGlobal
+        {
+            get
+            {
+                return new Rectangle((int)XGlobal, (int)YGlobal + (int)Parent.Height, (int)Width, (int)Height);
+            }
+        }
+
+        public GfxButton(Direct2DRenderer renderer, GfxObject parent) : base(renderer)
+        {
+            Parent = parent;
+
+            Position = new PointF(0f, 0f);
+            Size = new SizeF(20f, 20f);
+        }
+
+        public virtual bool PointContains(int x, int y)
+        {
+            int x2 = (int)(Parent as GfxBuildOrder).X + (int)X;
+            int y2 = (int)(Parent as GfxBuildOrder).Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
+
+            return new Rectangle(x2, y2, width, height).Contains(x, y);
+        }
+
+        public virtual void ClickIfHit(int x, int y)
+        {
+            if (PointContains(x, y))
+                Click();
+        }
+
+        public virtual void Click()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    // ################################# GfxButtonHide ##################################
+    public class GfxButtonHide : GfxButton
+    {
+        public GfxButtonHide(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
+        {
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(0f, 0f);
+            Size = new SizeF(37f, headserHeight);
+        }
+
+        public override void Click()
+        {
+            (Parent as GfxBuildOrder).Hide = !(Parent as GfxBuildOrder).Hide;
+        }
+
+        public override void Draw()
+        {
+            string text = (Parent as GfxBuildOrder).Hide ? "Show" : "Hide";
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+
+            Renderer.FillRectangle((int)XGlobal, (int)YGlobal, (int)Width - 1, (int)Height, GfxBuildOrder.ColorBack);
+            Renderer.DrawRectangle((int)XGlobal, (int)YGlobal, (int)Width, (int)Height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText(text, GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 2, y + 3);
+        }
+    }
+
+    // ################################ GfxButtonRestart ################################
+    public class GfxButtonRestart : GfxButton
+    {
+        public GfxButtonRestart(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
+        {
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(35f, 0f);
+            Size = new SizeF(43f, headserHeight);
+        }
+
+        public override void Click()
+        {
+            (Parent as GfxBuildOrder).BuildOrder.Restart();
+        }
+
+        public override void Draw()
+        {
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
+
+            Renderer.FillRectangle((int)XGlobal + 3, (int)YGlobal, (int)Width - 2, (int)Height, GfxBuildOrder.ColorBack);
+            Renderer.DrawRectangle((int)XGlobal + 2, (int)YGlobal, (int)Width, (int)Height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText("Restart", GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 3, y + 3);
+        }
+    }
+
+    // ################################ GfxButtonPrevStep ###############################
+    public class GfxButtonPrevStep : GfxButton
+    {
+        public GfxButtonPrevStep(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
+        {
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(80f, 0f);
+            Size = new SizeF(30f, headserHeight);
+        }
+
+        public override void Click()
+        {
+            (Parent as GfxBuildOrder).BuildOrder.PrevStep();
+        }
+
+        public override void Draw()
+        {
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
+
+            Renderer.DrawLine(x + width, y, x + width, y + height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText("Prev", GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 2, y + 3);
+        }
+    }
+
+    // ################################ GfxButtonNextStep ###############################
+    public class GfxButtonNextStep : GfxButton
+    {
+        public GfxButtonNextStep(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
+        {
+            int headserHeight = (Parent as GfxBuildOrder).HeaderHeight;
+
+            Position = new PointF(110f, 0f);
+            Size = new SizeF(30f, headserHeight);
+        }
+
+        public override void Click()
+        {
+            (Parent as GfxBuildOrder).BuildOrder.NextStep();
+        }
+
+        public override void Draw()
+        {
+            int x = (int)Parent.X + (int)X;
+            int y = (int)Parent.Y + (int)Y;
+            int width = (int)Width;
+            int height = (int)Height;
+
+            Renderer.DrawLine(x + width, y, x + width, y + height, 2f, GfxBuildOrder.ColorFront);
+            Renderer.DrawText("Next", GfxBuildOrder.Font, GfxBuildOrder.ColorFront, x + 2, y + 3);
+        }
+    }
+
+    // ################################# GfxButtonResize ################################
+    public class GfxButtonResize : GfxButton
+    {
+        private SizeF _gap = new SizeF(0f, 5f);
+
+        public GfxButtonResize(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
+        {
+            Position = new PointF(_gap.Width + 190f, _gap.Height);
+            Size = new SizeF(15f, 15f);
+        }
+
+        public override void Click()
+        {
+
+        }
+
+        public override bool PointContains(int x, int y)
+        {
+            int x2 = (int)(Parent.X + Parent.Width - Width);
+            int y2 = (int)(Parent.Y + Parent.Height - Height);
+            return new Rectangle(x2, y2, (int)Width, (int)Height).Contains(x, y);
+        }
+
+        public override void Draw()
+        {
+            int x = (int)(Parent.X + Parent.Width - Width);
+            int y = (int)(Parent.Y + Parent.Height - Height);
+
+            Point start = new Point(x, y + (int)Height);
+            Point end = new Point(x + (int)Width, y);
+
+            for (int i = 0; i <= Math.Min(Width, Height); i++)
+            {
+                Renderer.DrawLine(start.X, start.Y, end.X, end.Y, 1f, GfxBuildOrder.ColorFront);
+                start.X += 1;
+                end.Y += 1;
+            }
+        }
+    }
+
+    // ################################ GfxButtonPosition ###############################
+    public class GfxButtonPosition : GfxButton
+    {
+        public GfxButtonPosition(Direct2DRenderer renderer, GfxObject parent) : base(renderer, parent)
+        {
+            Size = new SizeF(20f, 10f);
+        }
+
+        public override bool PointContains(int x, int y)
+        {
+            int x2 = (int)(Parent.X);
+            int y2 = (int)(Parent.Y);
+            int headerHeight = (Parent as GfxBuildOrder).HeaderHeight;
+            return new Rectangle(x2, y2, (int)Parent.Width, headerHeight).Contains(x, y);
+        }
+
+        public override void Click()
+        {
+
+        }
+
+        public override void Draw()
+        {
+
         }
     }
 }

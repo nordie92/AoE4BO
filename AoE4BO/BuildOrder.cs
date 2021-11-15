@@ -13,12 +13,14 @@ namespace AoE4BO
         private Timer _timerUpdate;
         private Stopwatch _stopwatch;
         public delegate void MyEventHandler(object source, EventArgs e);
-        public event MyEventHandler StepFinished;
+        public event MyEventHandler StepRefresh;
+        private System.Media.SoundPlayer _soundPlayer;
 
         public BuildOrder(string buildOrderString)
         {
             Global.BoState = BoState.Idle;
             ParseBuildOrderString(buildOrderString);
+            _soundPlayer = new System.Media.SoundPlayer(@"notification.wav");
         }
 
         public void Start()
@@ -65,33 +67,60 @@ namespace AoE4BO
                 Global.GameData.Food, Global.GameData.Wood,
                 Global.GameData.Gold, Global.GameData.Stone))
             {
-                // set the next build order step
-                CurrentBuildOrderStep = CurrentBuildOrderStep.NextBuildOrderStep;
-
-                // setting state varible of previous build order step
-                CurrentBuildOrderStep.PrevBuildOrderStep.IsActive = false;
-                CurrentBuildOrderStep.PrevBuildOrderStep.IsDone = true;
-
-                // setting state varible of current build order step
-                CurrentBuildOrderStep.IsActive = true;
-                CurrentBuildOrderStep.IsDone = false;
-
-                // if next build order step is null we are finish
-                if (CurrentBuildOrderStep.NextBuildOrderStep == null)
-                    Global.BoState = BoState.Finish;
-
-                StepFinished(this, new EventArgs());
+                NextStep();
 
                 if (Global.Settings.PlaySound)
-                {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"notification.wav");
-                    player.Play();
-                }
+                    _soundPlayer.Play();
             }
 
             // adding delta time to next build order step to check time requirement
             if (CurrentBuildOrderStep.NextBuildOrderStep != null)
                 CurrentBuildOrderStep.NextBuildOrderStep.TimeActive += deltaTime;
+        }
+
+        public void NextStep()
+        {
+            if (CurrentBuildOrderStep.NextBuildOrderStep == null)
+                return;
+
+            // set the next build order step
+            CurrentBuildOrderStep = CurrentBuildOrderStep.NextBuildOrderStep;
+            CurrentBuildOrderStep.TimeActive = 0f;
+
+            // setting state varible of previous build order step
+            CurrentBuildOrderStep.PrevBuildOrderStep.IsActive = false;
+            CurrentBuildOrderStep.PrevBuildOrderStep.IsDone = true;
+
+            // setting state varible of current build order step
+            CurrentBuildOrderStep.IsActive = true;
+            CurrentBuildOrderStep.IsDone = false;
+
+            // if next build order step is null we are finish
+            if (CurrentBuildOrderStep.NextBuildOrderStep == null)
+                Global.BoState = BoState.Finish;
+
+            StepRefresh(this, new EventArgs());
+        }
+
+        public void PrevStep()
+        {
+            if (CurrentBuildOrderStep.PrevBuildOrderStep == null)
+                return;
+
+            // set the next build order step
+            CurrentBuildOrderStep = CurrentBuildOrderStep.PrevBuildOrderStep;
+
+            CurrentBuildOrderStep.NextBuildOrderStep.TimeActive = 0f;
+
+            // setting state varible of previous build order step
+            CurrentBuildOrderStep.NextBuildOrderStep.IsActive = false;
+            CurrentBuildOrderStep.NextBuildOrderStep.IsDone = false;
+
+            // setting state varible of current build order step
+            CurrentBuildOrderStep.IsActive = true;
+            CurrentBuildOrderStep.IsDone = false;
+
+            StepRefresh(this, new EventArgs());
         }
 
         private void ResetBuildOrderSteps()

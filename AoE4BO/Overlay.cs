@@ -76,17 +76,20 @@ namespace AoE4BO
             {
                 try
                 {
-                    string processName = Global.Settings.ProcessName;
-
                     Global.OverlayState = OverlayState.WaitForAEO;
-                    while (System.Diagnostics.Process.GetProcessesByName(processName).Length == 0)
+
+                    System.Diagnostics.Process process = null;
+                    while (process == null)
                     {
                         if (_stopDrawThread)
                             return;
 
+                        foreach (string processName in Global.Settings.ProcessName)
+                            if (System.Diagnostics.Process.GetProcessesByName(processName).Length > 0)
+                                process = System.Diagnostics.Process.GetProcessesByName(processName)[0];
+
                         Thread.Sleep(500);
                     }
-                    var process = System.Diagnostics.Process.GetProcessesByName(processName)[0];
                     _processSharp = new ProcessSharp(process, MemoryType.Remote);
 
                     var d3DOverlay = (Overlay)this;
@@ -95,7 +98,7 @@ namespace AoE4BO
                     d3DOverlay.Enable();
 
                     // create gfx objects
-                    _gfxBuildOrder = new GfxBuildOrder(OverlayWindow.Graphics, _buildOrder, process);
+                    _gfxBuildOrder = new GfxBuildOrder(OverlayWindow.Graphics, _buildOrder);
 
                     Global.OverlayState = OverlayState.Running;
                     while (!_stopDrawThread)

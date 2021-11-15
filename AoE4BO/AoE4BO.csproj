@@ -108,12 +108,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ForegroundTracker.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="BuildOrder.cs" />
     <Compile Include="BuildOrderStep.cs" />
-    <Compile Include="FormMain.cs" />
     <Compile Include="FormMain.Designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
@@ -125,6 +125,8 @@
     </Compile>
     <Compile Include="GameData.cs" />
     <Compile Include="Global.cs" />
+    <Compile Include="MouseHook.cs" />
+    <Compile Include="MouseHookHelper.cs" />
     <Compile Include="OCR.cs" />
     <Compile Include="Overlay.cs" />
     <Compile Include="OverlayGfxObjects.cs" />
