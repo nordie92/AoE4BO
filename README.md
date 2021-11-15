@@ -5,6 +5,8 @@ Age of Empires 4 build order overlay for windows
 This tool will make it easier for you to learn buildorders. The next steps of the build order are conveniently displayed in the game and update automatically according to the progress.
 
 ## Installation
+- Video instruction: https://www.youtube.com/watch?v=eDvuo8e2KRk  
+
 - Download latest release (https://github.com/nordie92/AoE4BO/releases)
 - Unzip
 - Execute "AoE4BO.exe" to start
