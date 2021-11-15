@@ -27,6 +27,9 @@ namespace AoE4BO
 
         public void StartBuildOrder(BuildOrder buildOrder)
         {
+            if (_thread != null && _thread.ThreadState == System.Threading.ThreadState.Background)
+                StopBuildOrder();
+
             _buildOrder = buildOrder;
 
             // start stopwatch to get draw delta time
@@ -45,6 +48,8 @@ namespace AoE4BO
         public void StopBuildOrder()
         {
             _stopDrawThread = true;
+            while (_stopDrawThread)
+                Thread.Sleep(100);
             Global.OverlayState = OverlayState.Idle;
         }
 
@@ -53,8 +58,6 @@ namespace AoE4BO
             if (_buildOrder != null)
             {
                 StopBuildOrder();
-                while (_stopDrawThread)
-                    Thread.Sleep(100);
                 StartBuildOrder(_buildOrder);
             }
         }
@@ -110,10 +113,10 @@ namespace AoE4BO
                 }
                 finally
                 {
-                    _stopDrawThread = false;
-                    Thread.Sleep(2000);
+                    Thread.Sleep(100);
                 }
             }
+            _stopDrawThread = false;
         }
 
         private void OnTick(object sender, EventArgs e)
