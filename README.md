@@ -17,7 +17,6 @@ Video instruction: https://www.youtube.com/watch?v=eDvuo8e2KRk
 - Start Match
 
 ## Build orders
-https://user-images.githubusercontent.com/35845673/141973295-0e0e76d9-e283-4638-9066-9ec1f5500d05.mp4
 Share your build order! https://steamcommunity.com/groups/Aoe4BO
 
 ## Create your own build order
